@@ -19,3 +19,7 @@ debug/
 
 *.make
 
+DEREK/
+pytest/
+optimize_mp/
+configs/make.inc

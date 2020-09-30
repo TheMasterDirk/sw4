@@ -15,8 +15,8 @@
 MPI_Datatype get_mpi_datatype( double* var ) {return MPI_DOUBLE;}
 MPI_Datatype get_mpi_datatype( float* var ) {return MPI_FLOAT;}
 MPI_Datatype get_mpi_datatype( int* var ) {return MPI_INT;}
-MPI_Datatype get_mpi_datatype( std::complex<double>* var ) {return MPI_CXX_DOUBLE_COMPLEX;}
-MPI_Datatype get_mpi_datatype( std::complex<float>* var ) {return MPI_CXX_FLOAT_COMPLEX;}
+//MPI_Datatype get_mpi_datatype( std::complex<double>* var ) {return MPI_CXX_DOUBLE_COMPLEX;}
+//MPI_Datatype get_mpi_datatype( std::complex<float>* var ) {return MPI_CXX_FLOAT_COMPLEX;}
 
 
 //-----------------------------------------------------------------------
