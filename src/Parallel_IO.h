@@ -3,33 +3,33 @@
 // # ----------------------------------------------------------------------
 // # SW4 - Seismic Waves, 4th order
 // # ----------------------------------------------------------------------
-// # Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
-// # Produced at the Lawrence Livermore National Laboratory. 
-// # 
+// # Copyright (c) 2013, Lawrence Livermore National Security, LLC.
+// # Produced at the Lawrence Livermore National Laboratory.
+// #
 // # Written by:
 // # N. Anders Petersson (petersson1@llnl.gov)
 // # Bjorn Sjogreen      (sjogreen2@llnl.gov)
-// # 
-// # LLNL-CODE-643337 
-// # 
-// # All rights reserved. 
-// # 
+// #
+// # LLNL-CODE-643337
+// #
+// # All rights reserved.
+// #
 // # This file is part of SW4, Version: 1.0
-// # 
+// #
 // # Please also read LICENCE.txt, which contains "Our Notice and GNU General Public License"
-// # 
+// #
 // # This program is free software; you can redistribute it and/or modify
 // # it under the terms of the GNU General Public License (as published by
-// # the Free Software Foundation) version 2, dated June 1991. 
-// # 
+// # the Free Software Foundation) version 2, dated June 1991.
+// #
 // # This program is distributed in the hope that it will be useful, but
 // # WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
 // # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-// # conditions of the GNU General Public License for more details. 
-// # 
+// # conditions of the GNU General Public License for more details.
+// #
 // # You should have received a copy of the GNU General Public License
 // # along with this program; if not, write to the Free Software
-// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA 
+// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
 #ifndef EW_WPPPIO_H
 #define EW_WPPPIO_H
 
@@ -48,7 +48,7 @@ public:
    void print( int recv );
    bool m_has_values;
    int m_steps;
-   int*  m_ncomm; 
+   int*  m_ncomm;
    int** m_comm_id;
    int** m_comm_index[6];
    int  m_maxbuf;
@@ -60,10 +60,10 @@ public:
    int* m_njblock;
    int* m_nkblock;
 
-   // Communication substeps 
+   // Communication substeps
    int* m_nsubcomm;
-   int** m_subcomm; 
-   int** m_subcommlabel; 
+   int** m_subcomm;
+   int** m_subcommlabel;
 };
 
 class Parallel_IO
@@ -76,7 +76,7 @@ public:
    void write_array_hdf5( const char* fname, const char *gname, const char *dname, int nc, void* array, hsize_t pos0, char* type );
 #endif
    void read_array( int* fid, int nc, float_sw4* array, off_t pos0, const char* typ, bool swap_bytes=false );
-			      
+
    void print( );
    void begin_sequential( MPI_Comm comm );
    void end_sequential( MPI_Comm comm );
@@ -86,9 +86,12 @@ public:
    int n_writers() const {return m_nwriters;}
    int proc_zero_rank_in_comm_world();
 
+	 MPI_Comm get_write_comm() {return m_write_comm;};
+	 MPI_Comm get_data_comm() {return m_data_comm;};
+
 private:
    void init_pio( int iwrite, int pfs, int ihave_array=-1 );
-   void init_array( int globalsizes[3], int localsizes[3], 
+   void init_array( int globalsizes[3], int localsizes[3],
 		    int starts[3], int nptsbuf, int padding=0 );
    void setup_substeps( );
    //   size_t read_dble_wlim( int* fid, double* rbuf, size_t nelem, size_t limit );
@@ -103,7 +106,7 @@ private:
    int m_zerorank_in_commworld;
    Byteswapper m_bswap;
 
-   MPI_Comm m_write_comm; 
+   MPI_Comm m_write_comm;
    MPI_Comm m_data_comm;
 
    Comminfo m_isend;

@@ -2,33 +2,33 @@
 // # ----------------------------------------------------------------------
 // # SW4 - Seismic Waves, 4th order
 // # ----------------------------------------------------------------------
-// # Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
-// # Produced at the Lawrence Livermore National Laboratory. 
-// # 
+// # Copyright (c) 2013, Lawrence Livermore National Security, LLC.
+// # Produced at the Lawrence Livermore National Laboratory.
+// #
 // # Written by:
 // # N. Anders Petersson (petersson1@llnl.gov)
 // # Bjorn Sjogreen      (sjogreen2@llnl.gov)
-// # 
-// # LLNL-CODE-643337 
-// # 
-// # All rights reserved. 
-// # 
+// #
+// # LLNL-CODE-643337
+// #
+// # All rights reserved.
+// #
 // # This file is part of SW4, Version: 1.0
-// # 
+// #
 // # Please also read LICENCE.txt, which contains "Our Notice and GNU General Public License"
-// # 
+// #
 // # This program is free software; you can redistribute it and/or modify
 // # it under the terms of the GNU General Public License (as published by
-// # the Free Software Foundation) version 2, dated June 1991. 
-// # 
+// # the Free Software Foundation) version 2, dated June 1991.
+// #
 // # This program is distributed in the hope that it will be useful, but
 // # WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
 // # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-// # conditions of the GNU General Public License for more details. 
-// # 
+// # conditions of the GNU General Public License for more details.
+// #
 // # You should have received a copy of the GNU General Public License
 // # along with this program; if not, write to the Free Software
-// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA 
+// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
 #include <mpi.h>
 #include <iostream>
 using namespace std;
@@ -87,7 +87,7 @@ Comminfo::~Comminfo()
 	 if( m_comm_id[p] != NULL )
 	    delete[] m_comm_id[p];
       delete[] m_comm_id;
-   }   
+   }
    for( int p= 0 ; p < 6 ; p++ )
    {
       if( m_comm_index[p] != NULL )
@@ -155,7 +155,7 @@ void Comminfo::print( int recv )
 	       for( int ss= 0 ; ss <= m_nsubcomm[s] ; ss++ )
 		  cout << " " << m_subcomm[s][ss] << " ";
 	       cout << endl;
-	    }  
+	    }
 	 }
       }
    }
@@ -169,12 +169,12 @@ Parallel_IO::Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsize
 //                 1 this processor will participate in I/O op.
 //        pfs    - 0 I/O will be done to non-parallel file system.
 //                 1 I/O will be done to parallel file system.
-//        globalsizes - Total size of array 
+//        globalsizes - Total size of array
 //        localsizes  - Size of sub block of array in this processor.
 //        starts      - Location of starting point of this array's sub block.
 //                       Zero based indices.
 //        nptsbuf     - Size of internal buffer in number of grid points.
-//        padding     - Size of overlap (halo points, ghost points) between blocks 
+//        padding     - Size of overlap (halo points, ghost points) between blocks
 //                      in different processors. padding is zero by default.
 // Notes:
 //    1. Setting pfs to zero assumes I/O operations have to be sequential. The processors will
@@ -184,17 +184,17 @@ Parallel_IO::Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsize
 //
 //    2. The actual size of the buffer allocated can differ from what is specified by `nptsbuf'.
 //       First, the size used by write_array or read_array will be nc*nptsbuf grid points, where
-//       nc is the number of components of the array at each grid point. Secondly, there is a 
-//       lower limit, corresponding to one lower dimensional slice of data. I.e., an array of 
+//       nc is the number of components of the array at each grid point. Secondly, there is a
+//       lower limit, corresponding to one lower dimensional slice of data. I.e., an array of
 //       size (nc,ni,nj,nk) with nk>1, will use at least nc*ni*nj points of buffer memory.
 //
-//    3. The `padding' parameter is zero by default. Zero padding will always work. If there is 
-//       padding between processors, setting `padding' accordingly will prevent values in the halo 
+//    3. The `padding' parameter is zero by default. Zero padding will always work. If there is
+//       padding between processors, setting `padding' accordingly will prevent values in the halo
 //       to be read/written more than once.
-//       Some performance might be gained by this. However, after a file is read, the values in 
-//       the halo (ghost points) will not be defined. If this option is used, it is the 
+//       Some performance might be gained by this. However, after a file is read, the values in
+//       the halo (ghost points) will not be defined. If this option is used, it is the
 //       responsibility of the user to update the halo points after the array is read.
-//                      
+//
    m_zerorank_in_commworld = -1;
    int ihave_array=1;
    if( localsizes[0] < 1 || localsizes[1] < 1 || localsizes[2] < 1 )
@@ -242,7 +242,7 @@ Parallel_IO::Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsize
 //-----------------------------------------------------------------------
 void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
 //-----------------------------------------------------------------------
-// Initialize for parallel I/O, 
+// Initialize for parallel I/O,
 // Input: iwrite - 0 this processor will not participate in I/O op.
 //                 1 this processor will participate in I/O op.
 //        pfs    - 0 I/O will be done to non-parallel file system.
@@ -253,7 +253,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
 //
 // Constructs communicators from input iwrite and ihave_array:
 //
-//    m_data_comm  - All processors that holds part of the array or 
+//    m_data_comm  - All processors that holds part of the array or
 //                   writes to disc, or both, i.e., iwrite .or. ihave_array
 //    m_write_comm - Subset of m_data_comm that writes to disk, i.e., iwrite.
 //
@@ -302,7 +302,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
 	    npartprocs++;
       if( npartprocs < 1 )
       {
-	 // error 
+	 // error
          cout << "ERROR 1, in Parallel_IO::init_pio, no processors selected, npartprocs =  " << npartprocs << endl;
          delete[] tmp;
          return;
@@ -327,7 +327,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
       delete[] tmp;
       if( i != npartprocs )
 	 cout << "Parallel_IO::init_pio, ERROR: this should never happen " << endl;
-      
+
       retcode = MPI_Comm_group( MPI_COMM_WORLD, &world_group );
       if( retcode != MPI_SUCCESS )
       {
@@ -348,7 +348,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
 	 else
 	    i++;
       }
-      
+
       retcode = MPI_Group_incl( world_group, npartprocs, array_holders, &array_group );
       if( retcode != MPI_SUCCESS )
       {
@@ -370,7 +370,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
    if( m_data_comm != MPI_COMM_NULL )
    {
       MPI_Comm_size( m_data_comm, &nprocs );
-// 2. Create communicator of all I/O processors. Save as m_write_comm. This communicator is 
+// 2. Create communicator of all I/O processors. Save as m_write_comm. This communicator is
 //    used in MPI_Barrier to synchronize read and writes on non-parallel file systems
       m_iwrite = iwrite;
       try
@@ -443,13 +443,13 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
    // 3. Save parallel file system info
    m_parallel_file_system = pfs;
 
-   // 4. Initialize some variables to shut up the memory checker 
+   // 4. Initialize some variables to shut up the memory checker
    if( m_data_comm == MPI_COMM_NULL )
       m_iwrite = false;
 }
 
 //-----------------------------------------------------------------------
-void Parallel_IO::init_array( int globalsizes[3], int localsizes[3], 
+void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 			      int starts[3], int nptsbuf, int padding )
 {
 // Set up data structures for communication before I/O
@@ -475,7 +475,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
    if( m_data_comm != MPI_COMM_NULL )
    {
       MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-      
+
    ni  = localsizes[0];
    nj  = localsizes[1];
    nk  = localsizes[2];
@@ -536,7 +536,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
    m_csteps = blocks_in_writer;
    if( r > 0 )
       m_csteps++;
-   
+
 /* 4. Set up communication data structures */
 /*   m_isend[fd].m_maxbuf = bufsize;*/
 //   if( nkg == 1 )
@@ -578,7 +578,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 	 m_isend.m_comm_index[p2][p1] = NULL;
    }
 
-   int nglast=nkg, nlast=nk, olast=ok; 
+   int nglast=nkg, nlast=nk, olast=ok;
    if( nkg == 1 )
    {
       nglast = njg;
@@ -606,7 +606,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 	    else
 	    {
 	       kb = s*(blsize+1) + (blnr-s-1)*(blsize)+1;
-	       ke = s*(blsize+1) + (blnr-s)*(blsize);	       
+	       ke = s*(blsize+1) + (blnr-s)*(blsize);
 	    }
 	    if( kb <= 1 )
 	       kb = 1;
@@ -637,8 +637,8 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 	 }
 	 catch( bad_alloc& ba )
 	 {
-	    cout << "Parallel_IO::init_array, processor " << gproc <<  
-	       ". Allocation of m_isend.m_comm_id or m_comm_index failed " 
+	    cout << "Parallel_IO::init_array, processor " << gproc <<
+	       ". Allocation of m_isend.m_comm_id or m_comm_index failed "
 		 << " nsend = " << nsend << " b= " << b << " Exception= " << ba.what() << endl;
 	    MPI_Abort(MPI_COMM_WORLD,0);
 	 }
@@ -649,7 +649,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 /* Setup send information */
    maxpts = 0;
    for( b = 1 ; b <= m_csteps ; b++ )
-   { 
+   {
       nsend = 0;
       for( p = 1 ; p <= m_nwriters ; p++ )
       {
@@ -667,7 +667,7 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 	    else
 	    {
 	       kb = s*(blsize+1) + (blnr-s-1)*(blsize)+1;
-	       ke = s*(blsize+1) + (blnr-s)*(blsize);	       
+	       ke = s*(blsize+1) + (blnr-s)*(blsize);
 	    }
 	    if( kb <= 1 )
 	       kb = 1;
@@ -851,14 +851,14 @@ void Parallel_IO::init_array( int globalsizes[3], int localsizes[3],
 		     if( nrecvs[i]>-1)
 			m_irecv.m_comm_id[b-1][l++] = i;
 		  }
-	       // l should be j here 
+	       // l should be j here
 		  for( q = 0 ; q < 6 ; q++ )
 		     m_irecv.m_comm_index[q][b-1] = new int[j];
 	       }
 	       catch( bad_alloc& ba )
 	       {
-		  cout << "Parallel_IO::init_array, processor " << gproc <<  
-		     ". Allocation of m_irecv.m_comm_id or m_comm_index failed " 
+		  cout << "Parallel_IO::init_array, processor " << gproc <<
+		     ". Allocation of m_irecv.m_comm_id or m_comm_index failed "
 		       << " j = " << j << " b= " << b << " Exception= " << ba.what() << endl;
 		  MPI_Abort(MPI_COMM_WORLD,0);
 	       }
@@ -1003,7 +1003,7 @@ void Parallel_IO::setup_substeps( )
    size_t buflim = static_cast<size_t>(m_irecv.m_maxiobuf*1.3);
 //   size_t buflim = 1512;
 
-   // 1. Make sure that bufsize is large enough to fit the largest 
+   // 1. Make sure that bufsize is large enough to fit the largest
    //    single message.
    if( m_iwrite )
    {
@@ -1098,7 +1098,7 @@ void Parallel_IO::setup_substeps( )
 	       size += nri*((size_t)nrj)*nrk;
 	 }
 	 m_irecv.m_subcomm[b][s] = m_irecv.m_ncomm[b];
-      
+
       // Communicate the step id to non-io processors
 	 rbuf = new int[m_irecv.m_ncomm[b]];
 	 for( int ss= 0 ; ss < nsub ; ss++ )
@@ -1114,7 +1114,7 @@ void Parallel_IO::setup_substeps( )
       {
 	 m_irecv.m_nsubcomm[b] = 0;
       }
-  
+
       // Receive the step id
       m_isend.m_subcommlabel[b] = new int[m_isend.m_ncomm[b]];
       for( int i = 0 ; i < m_isend.m_ncomm[b] ; i++ )
@@ -1224,7 +1224,7 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
       {
 	 int gproc;
 	 MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	 cout << "Parallel_IO::write_array, processor " << gproc <<  
+	 cout << "Parallel_IO::write_array, processor " << gproc <<
 	    ". Allocation of sbuf or sbuff failed. Tried to allocate " << m_isend.m_maxbuf*nc;
 	 if( flt == 0 )
 	    cout << "doubles";
@@ -1271,7 +1271,7 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
 	 {
 	    int gproc;
 	    MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	    cout << "Parallel_IO::write_array, processor " << gproc <<  
+	    cout << "Parallel_IO::write_array, processor " << gproc <<
 	    ". Allocation of rbuf and ribuff failed. Tried to allocate " << m_irecv.m_maxbuf*nc
 		 << " + "  << m_irecv.m_maxiobuf*nc;
 	    if( flt ==  0 )
@@ -1293,7 +1293,7 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
 	 {
 	    int gproc;
 	    MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	    cout << "Parallel_IO::write_array, processor " << gproc << ". Allocating req failed. " 
+	    cout << "Parallel_IO::write_array, processor " << gproc << ". Allocating req failed. "
 		 << "Tried to allocate " << mxsize << " MPI_Requests. " << "Exception = " << ba.what() << endl;
 	    MPI_Abort(MPI_COMM_WORLD,0);
 	 }
@@ -1340,7 +1340,7 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
 	       ptr += ((off_t)nri)*nrj*nrk*nc;
 	    }
 	 }
-      // Send 
+      // Send
 	 for( i = 0 ; i < m_isend.m_ncomm[b] ; i++ )
 	 {
 	    i1 = m_isend.m_comm_index[0][b][i];
@@ -1445,11 +1445,11 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
 
             int alignment = 65536;
             /* char *env = getenv("HDF5_ALIGNMENT_SIZE"); */
-            /* if (env != NULL) */ 
+            /* if (env != NULL) */
             /*     alignment = atoi(env); */
-            /* if (alignment < 65536) */ 
+            /* if (alignment < 65536) */
             /*     alignment = 65536; */
-         
+
             fapl = H5Pcreate(H5P_FILE_ACCESS);
             /* H5Pset_fapl_mpio(fapl, MPI_COMM_SELF, MPI_INFO_NULL); */
             H5Pset_alignment(fapl, alignment, alignment);
@@ -1458,19 +1458,19 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
 
             /* cout << "Rank " << gproc <<" opening file [" << fname << "], [" << gname << "], [" << dname << "], kl=" << kl << endl; */
             h5_fid = H5Fopen(fname, H5F_ACC_RDWR, fapl);
-            if (h5_fid < 0) 
+            if (h5_fid < 0)
                cout << "Rank " << gproc <<" error opening file [" << fname << "]" << endl;
 
             hid_t loc = h5_fid;
             if (gname != NULL) {
               grp = H5Gopen(h5_fid, gname, H5P_DEFAULT);
-              if (grp < 0) 
+              if (grp < 0)
                  cout << "Rank " << gproc <<" error opening [" << gname << "] group from file [" << fname << "]" << endl;
               loc = grp;
             }
 
             dset = H5Dopen(loc, dname, H5P_DEFAULT);
-            if (dset < 0) 
+            if (dset < 0)
                cout << "Rank " << gproc <<" error opening [" << dname << "] dset from file [" << fname << "]" << endl;
 
             filespace = H5Dget_space(dset);
@@ -1514,9 +1514,9 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
             /* cout << "Rank " << gproc << ": offsets " << offsets[0]<< ", " <<offsets[1]<< ", " <<offsets[2] << endl; */
             /* cout << "Rank " << gproc << ": counts  " << counts[0]<< ", " <<counts[1]<< ", " <<counts[2] << endl; */
 
-	    if( flt == 0 ) 
+	    if( flt == 0 )
                ret  = H5Dwrite(dset, H5T_NATIVE_DOUBLE, memspace, filespace, dxpl, rbuf);
-	    else 
+	    else
                ret  = H5Dwrite(dset, H5T_NATIVE_FLOAT, memspace, filespace, dxpl, rfbuf);
             /* cout << "Rank " << gproc << " writing data " << rfbuf[0] << ", " << rfbuf[1] << ", ..., " << rfbuf[count-2] << ", " << rfbuf[count-1] << endl; */
 
@@ -1528,7 +1528,7 @@ void Parallel_IO::write_array_hdf5( const char *fname, const char *gname, const 
             H5Sclose(memspace);
             H5Sclose(filespace);
             H5Dclose(dset);
-            if (gname != NULL && gname[0] != '/') 
+            if (gname != NULL && gname[0] != '/')
               H5Gclose(grp);
             H5Pclose(fapl);
             H5Pclose(dxpl);
@@ -1616,7 +1616,7 @@ void Parallel_IO::write_array( int* fid, int nc, void* array, off_t pos0,
       {
 	 int gproc;
 	 MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	 cout << "Parallel_IO::write_array, processor " << gproc <<  
+	 cout << "Parallel_IO::write_array, processor " << gproc <<
 	    ". Allocation of sbuf or sbuff failed. Tried to allocate " << m_isend.m_maxbuf*nc;
 	 if( flt == 0 )
 	    cout << "doubles";
@@ -1663,7 +1663,7 @@ void Parallel_IO::write_array( int* fid, int nc, void* array, off_t pos0,
 	 {
 	    int gproc;
 	    MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	    cout << "Parallel_IO::write_array, processor " << gproc <<  
+	    cout << "Parallel_IO::write_array, processor " << gproc <<
 	    ". Allocation of rbuf and ribuff failed. Tried to allocate " << m_irecv.m_maxbuf*nc
 		 << " + "  << m_irecv.m_maxiobuf*nc;
 	    if( flt ==  0 )
@@ -1685,7 +1685,7 @@ void Parallel_IO::write_array( int* fid, int nc, void* array, off_t pos0,
 	 {
 	    int gproc;
 	    MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
-	    cout << "Parallel_IO::write_array, processor " << gproc << ". Allocating req failed. " 
+	    cout << "Parallel_IO::write_array, processor " << gproc << ". Allocating req failed. "
 		 << "Tried to allocate " << mxsize << " MPI_Requests. " << "Exception = " << ba.what() << endl;
 	    MPI_Abort(MPI_COMM_WORLD,0);
 	 }
@@ -1755,7 +1755,7 @@ void Parallel_IO::write_array( int* fid, int nc, void* array, off_t pos0,
 	       ptr += ((off_t)nri)*nrj*nrk*nc;
 	    }
 	 }
-      // Send 
+      // Send
 	 for( i = 0 ; i < m_isend.m_ncomm[b] ; i++ )
 	 {
 	    i1 = m_isend.m_comm_index[0][b][i];
@@ -1985,7 +1985,7 @@ void Parallel_IO::read_array( int* fid, int nc, float_sw4* array, off_t pos0,
       catch( bad_alloc &ba )
       {
 	 cout << "Parallel_IO::read_array, processor " << gproc << ". Allocating memory for sbuf failed. "
-	      << "Tried to allocate " << m_isend.m_maxbuf*nc << " doubles. "  
+	      << "Tried to allocate " << m_isend.m_maxbuf*nc << " doubles. "
 	      <<  "Exception= " << ba.what() << endl;
 	 MPI_Abort(MPI_COMM_WORLD,0);
       }
@@ -2034,7 +2034,7 @@ void Parallel_IO::read_array( int* fid, int nc, float_sw4* array, off_t pos0,
 	 }
 	 catch( bad_alloc &ba )
 	 {
-	    cout << "Parallel_IO::read_array, processor " << gproc << ". Allocating req failed. " 
+	    cout << "Parallel_IO::read_array, processor " << gproc << ". Allocating req failed. "
 		 << "Tried to allocate " << mxsize << " MPI_Requests. " << "Exception = " << ba.what() << endl;
 	    MPI_Abort(MPI_COMM_WORLD,0);
 	 }
@@ -2042,11 +2042,11 @@ void Parallel_IO::read_array( int* fid, int nc, float_sw4* array, off_t pos0,
          int bb=0;
          while( m_irecv.m_ncomm[bb] == 0 )
 	    bb++;
-	 
+
 	 il = m_irecv.m_ilow[bb];
 	 jl = m_irecv.m_jlow[bb];
 	 kl = m_irecv.m_klow[bb];
-	 
+
 	 ind = il-1+((off_t)nig)*(jl-1)+((off_t)nig)*njg*(kl-1);
 	 sizew = lseek( *fid, pos0+nc*ind*typsize, SEEK_SET );
 	 if( sizew == -1 )
@@ -2095,7 +2095,7 @@ void Parallel_IO::read_array( int* fid, int nc, float_sw4* array, off_t pos0,
 	    if( m_irecv.m_ncomm[b] > 0 )
 	    {
 	       size_t linux_lim=268434944;//max no of doubles in one call to read/write, limited by Linux kernel.
-	       if( flt == 0 ) 
+	       if( flt == 0 )
 	       {
 		  if( nc*((size_t)niblock)*njblock*nkblock > linux_lim )
 		     //		     sizew = read_dble_wlim( fid, rbuf, nc*((size_t)niblock)*njblock*nkblock,linux_lim);
@@ -2137,7 +2137,7 @@ void Parallel_IO::read_array( int* fid, int nc, float_sw4* array, off_t pos0,
 	    mxstep = m_irecv.m_nsubcomm[b];
 	 for( i= 0 ; i < m_isend.m_ncomm[b] ; i++ )
 	    mxstep = mxstep > (m_isend.m_subcommlabel[b][i]+1) ? mxstep : (m_isend.m_subcommlabel[b][i]+1);
-	 
+
 //	 for( s = 0 ; s < m_irecv.m_nsubcomm[b] ; s++ )
 	 for( s = 0 ; s < mxstep ; s++ )
 	 {
@@ -2347,7 +2347,7 @@ int Parallel_IO::proc_zero_rank_in_comm_world()
 //-----------------------------------------------------------------------
 template<class T> size_t Parallel_IO::read_with_limit( int* fid, T* rbuf, size_t nelem, size_t limit )
 {
-// Read a vector of `nelem' elements of type T into rbuf, with maximum of 
+// Read a vector of `nelem' elements of type T into rbuf, with maximum of
 // elements per read is limited to `limit'.
 //
 // Input: fid   - File descriptor previously opened with `open'.
@@ -2376,7 +2376,7 @@ template<class T> size_t Parallel_IO::read_with_limit( int* fid, T* rbuf, size_t
 //-----------------------------------------------------------------------
 template<class T> size_t Parallel_IO::write_with_limit( int* fid, T* rbuf, size_t nelem, size_t limit )
 {
-// Write a vector of `nelem' elements of type T to disk, when maximum of 
+// Write a vector of `nelem' elements of type T to disk, when maximum of
 // elements per write is limited to `limit'.
 //
 // Input: fid   - File descriptor previously opened with `open'.
@@ -2401,4 +2401,3 @@ template<class T> size_t Parallel_IO::write_with_limit( int* fid, T* rbuf, size_
    }
    return ind*sizeof(T);
 }
-

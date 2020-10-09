@@ -11,11 +11,11 @@
 # CXX = C++ compiler
 # FC  = Fortran-77 compiler
 #
-# SW4ROOT = path to third party libraries (used when etree=yes and proj=yes). 
+# SW4ROOT = path to third party libraries (used when etree=yes and proj=yes).
 # HDF5ROOT = path to hdf5 library and include files (used when hdf5=yes).
 # FFTWROOT = path to fftw library and include files (used when fftw=yes).
 # Note: third party libraries should have include files in $(SW4ROOT)/include, libraries in $(SW4ROOT)/lib
-# Note: HDF5ROOT and FFTWROOT can be left undefined if these libraries are 
+# Note: HDF5ROOT and FFTWROOT can be left undefined if these libraries are
 #       available by some other mechanism, such as 'module add'.
 #
 # The following environmental variables are optional:
@@ -41,13 +41,15 @@ endif
 
 ifeq ($(optlevel),DEBUG)
    FFLAGS    = -g -O0
-   CXXFLAGS  = -g -I../src -DBZ_DEBUG -O0 -std=c++11
+#   CXXFLAGS  = -g -I../src -DBZ_DEBUG -O0 -std=c++14
+   CXXFLAGS  = -g -I../src -DBZ_DEBUG -O0
    CFLAGS    = -g -O0
 else
    FFLAGS   = -O3
 # AP (160419) Note that cmake uses -O3 instead of -O for CXX and C
-   CXXFLAGS = -O3 -I../src -std=c++11
-   CFLAGS   = -O3 
+#   CXXFLAGS = -O3 -I../src -std=c++11
+   CXXFLAGS = -O3 -I../src
+   CFLAGS   = -O3
 endif
 
 fullpath := $(shell pwd)
@@ -159,22 +161,22 @@ ifeq ($(etree),yes)
    linklibs += -L$(SW4LIB) -lcencalvm -lproj
 else ifeq ($(proj),yes)
    CXXFLAGS += -DENABLE_PROJ4 -I$(SW4INC)
-   linklibs += -L$(SW4LIB) -lproj 
+   linklibs += -L$(SW4LIB) -lproj
    etree := "no"
 else
    etree := "no"
    proj  := "no"
 endif
 
-# FFTW needed for random material. If FFTWHOME undefined, it is assumed that 
+# FFTW needed for random material. If FFTWHOME undefined, it is assumed that
 #   fftw has been defined by adding a module (or similar) from the OS.
 ifeq ($(fftw),yes)
    ifdef FFTWHOME
-      CXXFLAGS += -DENABLE_FFTW -I$(FFTWHOME)/include 
+      CXXFLAGS += -DENABLE_FFTW -I$(FFTWHOME)/include
    else
-      CXXFLAGS += -DENABLE_FFTW 
+      CXXFLAGS += -DENABLE_FFTW
    endif
-   linklibs += -L$(FFTWHOME)/lib -lfftw3_mpi -lfftw3 
+   linklibs += -L$(FFTWHOME)/lib -lfftw3_mpi -lfftw3
 endif
 
 ifeq ($(prec),single)
@@ -229,7 +231,7 @@ OBJ  = EW.o Sarray.o version.o parseInputFile.o ForcingTwilight.o \
 
 
 # Fortran routines (lamb_exact_numquad needs QUADPACK)
- OBJ +=  rayleighfort.o lamb_exact_numquad.o 
+ OBJ +=  rayleighfort.o lamb_exact_numquad.o
 
 # new C-routines converted from fortran
  OBJ += addsgdc.o bcfortc.o bcfortanisgc.o bcfreesurfcurvanic.o boundaryOpc.o energy4c.o checkanisomtrlc.o \
@@ -241,7 +243,7 @@ OBJ  = EW.o Sarray.o version.o parseInputFile.o ForcingTwilight.o \
 
 # OpenMP & C-version of the F-77 routine curvilinear4sg() is in rhs4sgcurv.o
 # Source optimization
-#OBJOPT = optmain.o linsolvelu.o solve-backward.o ConvParOutput.o 
+#OBJOPT = optmain.o linsolvelu.o solve-backward.o ConvParOutput.o
 
 # Material optimization
 MOBJOPT  = moptmain.o solve-backward-allpars.o lbfgs.o nlcg.o ProjectMtrl.o \
@@ -265,7 +267,7 @@ FMOBJOPT = $(addprefix $(builddir)/,$(MOBJOPT)) $(addprefix $(builddir)/,$(QUADP
 sw4: $(FSW4) $(FOBJ)
 	@echo "*** Configuration file: '" $(foundincfile) "' ***"
 	@echo "********* User configuration variables **************"
-	@echo "debug=" $(debug) " proj=" $(proj) " etree=" $(etree) " SW4ROOT"= $(SW4ROOT) 
+	@echo "debug=" $(debug) " proj=" $(proj) " etree=" $(etree) " SW4ROOT"= $(SW4ROOT)
 	@echo "CXX=" $(CXX) "EXTRA_CXX_FLAGS"= $(EXTRA_CXX_FLAGS)
 	@echo "FC=" $(FC) " EXTRA_FORT_FLAGS=" $(EXTRA_FORT_FLAGS)
 	@echo "EXTRA_LINK_FLAGS"= $(EXTRA_LINK_FLAGS)
@@ -276,17 +278,17 @@ sw4: $(FSW4) $(FOBJ)
 	@cat wave.txt
 	@echo "*** Build directory: " $(builddir) " ***"
 
-sw4mopt: $(FOBJ) $(FMOBJOPT) 
+sw4mopt: $(FOBJ) $(FMOBJOPT)
 	@echo "*** Configuration file: '" $(foundincfile) "' ***"
 	@echo "********* User configuration variables **************"
-	@echo "debug=" $(debug) " proj=" $(proj) " etree=" $(etree) " SW4ROOT"= $(SW4ROOT) 
+	@echo "debug=" $(debug) " proj=" $(proj) " etree=" $(etree) " SW4ROOT"= $(SW4ROOT)
 	@echo "CXX=" $(CXX) "EXTRA_CXX_FLAGS"= $(EXTRA_CXX_FLAGS)
 	@echo "FC=" $(FC) " EXTRA_FORT_FLAGS=" $(EXTRA_FORT_FLAGS)
 	@echo "EXTRA_LINK_FLAGS"= $(EXTRA_LINK_FLAGS)
 	@echo "******************************************************"
 	cd $(builddir); $(CXX) $(CXXFLAGS) -o $@ $(MOBJOPT) $(OBJ) $(QUADPACK) $(linklibs)
 	@echo " "
-	@echo "******* sw4mopt was built successfully *******" 
+	@echo "******* sw4mopt was built successfully *******"
 	@echo " "
 	@echo "*** Build directory: " $(builddir) " ***"
 
@@ -296,7 +298,7 @@ sw4-v1.1.tgz:  $(FSW4) $(FOBJ)
 	mkdir sw4-v1.1
 	cp -r src configs tools examples doc Makefile wave.txt CMakeLists.txt INSTALL.txt LICENSE.txt README.txt sw4-v1.1
 	tar czf $@ sw4-v1.1
-	rm -rf sw4-v1.1 
+	rm -rf sw4-v1.1
 
 # test
 $(builddir)/rhs4sgcurv.o:src/rhs4sgcurv.C
@@ -323,11 +325,11 @@ $(builddir)/%.o:src/quadpack/%.f
 
 $(builddir)/%.o:src/%.C
 	/bin/mkdir -p $(builddir)
-	 cd $(builddir); $(CXX) $(CXXFLAGS) -c ../$< 
+	 cd $(builddir); $(CXX) $(CXXFLAGS) -c ../$<
 
 $(builddir)/RandomizedMaterial.o:src/RandomizedMaterial.C
 	/bin/mkdir -p $(builddir)
-	 cd $(builddir); $(CXX) $(CXXFLAGS) -std=c++11 -c ../$< 
+	 cd $(builddir); $(CXX) $(CXXFLAGS) -std=c++11 -c ../$<
 
 clean:
 	/bin/mkdir -p $(optdir)
