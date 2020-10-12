@@ -98,7 +98,17 @@ void s_handles(MPIX_Handles * handle)
 
 void d_handles(MPIX_Handles handle)
 {
+	// Restore the comms!
+	for(int i = 0; i < handle.comm_size; i++)
+	{
+		//if(i < )
+		//else if (i <)
+		//else if (i < )
+		//else
+			// Restore the m_cartesian_communicator;
+	}
 
+	// Restore the types!
 }
 
 int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& fileName);
@@ -212,15 +222,16 @@ int main(int argc, char **argv)
 
 int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& fileName)
 {
-	int fail_step = 25;
+	int fail_step = 17;
+	if(fault_epoch > 0)
+		fail_step = -1;
 // Save the source description here
   vector<vector<Source*> > GlobalSources;
 // Save the time series here
   vector<vector<TimeSeries*> > GlobalTimeSeries;
 
 // make a new simulation object by reading the input file 'fileName'
-cout << "FE: " << fault_epoch << endl;
-  simulation = std::make_unique<EW>(fileName, GlobalSources, GlobalTimeSeries);
+  simulation = std::make_unique<EW>(fileName, GlobalSources, GlobalTimeSeries, fault_epoch);
 
   if (!simulation->wasParsingSuccessful())
   {
@@ -290,8 +301,10 @@ cout << "FE: " << fault_epoch << endl;
 			MPIX_FT_errno(&bob);
 			if(bob == MPIX_TRY_RELOAD)
 			{
+				std::cout << " hmmm error!" << std::endl;
 				return bob;
 			}
+			std::cout << " Past check!" << std::endl;
 // save all time series
 
       double myWriteTime = 0.0, allWriteTime;

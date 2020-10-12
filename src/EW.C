@@ -356,7 +356,7 @@ using namespace std;
 
 // constructor
 EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
-       vector<vector<TimeSeries*> > & a_GlobalTimeSeries, bool a_invproblem ):
+       vector<vector<TimeSeries*> > & a_GlobalTimeSeries, int the_epoch_num, bool a_invproblem ):
 //  m_epi_lat(0.0), m_epi_lon(0.0), m_epi_depth(0.0), m_epi_t0(0.0),
 //  m_topo_zmax(0.0),
   m_topoInputStyle(UNDEFINED),
@@ -531,7 +531,7 @@ EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
   m_anisotropic(false),
   m_croutines(true),
   NO_TOPO(1e38),
-  stages_epoch(0)
+  stages_epoch(the_epoch_num)
 {
 
    MPI_Comm_rank(MPI_COMM_WORLD, &m_myRank);

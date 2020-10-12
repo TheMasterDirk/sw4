@@ -407,15 +407,17 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
   }
 
 // setup communicators for 3D solutions on all grids
-//if(stages_epoch == 0)
-//{
-// std::cout << "D: " <<   stages_epoch << std::endl;
+if(stages_epoch == 0)
+{
+  std::cout << "D: " <<   stages_epoch << std::endl;
   setupMPICommunications();
-//}
-//else
-//{
-//	std::cout << "Does this break stuff?" << std::endl;
-//}
+}
+else
+{
+	std::cout << "Q: " <<   stages_epoch << std::endl;
+	//MPIX_Deserialize_handles();
+	setupMPICommunications();
+}
 
 // Make curvilinear grid and compute metric
   for( int g=mNumberOfCartesianGrids ; g < mNumberOfGrids ; g++ )
@@ -4081,6 +4083,15 @@ void EW::processCheckPoint(char* buffer)
    {
       m_check_point->set_restart_file( restartFileName, bufsize );
    }
+	 else if (stages_epoch > 0)
+	 {
+		 //HARD CODED ATTEMPT RIGHT NOW!
+		 string the_file_path = "elastic.cycle=";
+		 the_file_path.append(std::to_string(stages_epoch*5));
+		 the_file_path.append(".sw4checkpoint");
+		 std::cout << "did it work: " <<the_file_path << std::endl;
+		 m_check_point->set_restart_file(the_file_path, bufsize);
+	 }
    if( restartPathGiven )
    {
      m_check_point->set_restart_path( restartPath );

@@ -90,7 +90,7 @@ class EW
 {
 public:
    EW(const string& name, vector<vector<Source*> > & a_GlobalUniqueSources,
-      vector<vector<TimeSeries*> > & a_GlobalTimeSeries, bool invproblem=false );
+      vector<vector<TimeSeries*> > & a_GlobalTimeSeries, int the_epoch_num, bool invproblem=false );
 ~EW();
 
 vector<Image *> get_image_vector(){return mImageFiles;};
