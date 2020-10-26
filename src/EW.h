@@ -96,6 +96,8 @@ public:
 vector<Image *> get_image_vector(){return mImageFiles;};
 vector<MPI_Datatype> get_all_datatypes();
 int get_s_epoch() {return stages_epoch;};
+void restore_types(MPI_Datatype * types, int types_size);
+void debug_datatypes();
 
 bool wasParsingSuccessful();
 bool isInitialized();

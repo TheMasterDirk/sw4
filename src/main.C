@@ -67,7 +67,7 @@ void s_handles(MPIX_Handles * handle)
 	// the "two" per P_IO is a hardcoded value right now. in the future,
 	// probably need to get exact number.
 	handle->comm_size = v.size()*3 + 1 ;
-	handle->comms = (MPI_Comm *) malloc(sizeof(MPI_Comm) * handle->comm_size);
+	handle->comms = new MPI_Comm[handle->comm_size];
 
 	// Save Image objects' communicator
 	for(int i = 0; i < v.size(); i++)
@@ -83,12 +83,13 @@ void s_handles(MPIX_Handles * handle)
 	handle->comms[v.size()*3] = simulation->m_cartesian_communicator;
 
 	// SW4 doesn't need any extra groups to be saved (the comm groups are auto saved)
+	handle->grps = nullptr;
 	handle->group_size = 0;
 
 	// Save the datatypes!
 	std::vector<MPI_Datatype> lots_o_types = simulation->get_all_datatypes();
 	handle->type_size = lots_o_types.size();
-	handle->dtypes = (MPI_Datatype *) malloc(sizeof(MPI_Datatype) * handle->type_size);
+	handle->dtypes = new MPI_Datatype[handle->type_size];
 	for(int i = 0; i < lots_o_types.size(); i++)
 	{
 		handle->dtypes[i] = lots_o_types[i];
@@ -109,6 +110,10 @@ void d_handles(MPIX_Handles handle)
 	}
 
 	// Restore the types!
+	simulation->restore_types(handle.dtypes, handle.type_size);
+	delete[] handle.dtypes;
+	delete[] handle.comms;
+	delete[] handle.grps;
 }
 
 int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& fileName);
@@ -119,7 +124,7 @@ int main(int argc, char **argv)
 	bool checkmode = false;
 
 	stringstream reason;
-
+	std::cout << "Starting up!" << std::endl;
 	// Initialize MPI...
 	MPI_Init(&argc, &argv);
 	MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
@@ -217,6 +222,15 @@ int main(int argc, char **argv)
 
 	// Stop MPI
 	MPI_Finalize();
+
+	if( myRank == 0 )
+	{
+		cout << "============================================================" << endl
+				 << " program sw4 finished! " << endl
+				 << "============================================================" << endl;
+	}
+
+	std::cout << status << std::endl;
 	return status;
 } // end of main
 
@@ -232,6 +246,12 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 
 // make a new simulation object by reading the input file 'fileName'
   simulation = std::make_unique<EW>(fileName, GlobalSources, GlobalTimeSeries, fault_epoch);
+	if(fault_epoch > 0)
+	{
+		MPIX_Deserialize_handles();
+		std::cout << "Z: " <<   fault_epoch << std::endl;
+		//setupMPICommunications();
+	}
 
   if (!simulation->wasParsingSuccessful())
   {
@@ -245,6 +265,7 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
   {
 		// get the simulation object ready for time-stepping
 		simulation->setupRun( GlobalSources );
+		std::cout << "After setup run " << std::endl;
 
 		if (!simulation->isInitialized())
 		{
@@ -324,12 +345,6 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 				#endif
 			}
 
-      if( myRank == 0 )
-      {
-				cout << "============================================================" << endl
-				     << " program sw4 finished! " << endl
-				     << "============================================================" << endl;
-      }
 			*done = 1;
     }
   }

@@ -36,7 +36,7 @@ CheckPoint::CheckPoint( EW* a_ew ) :
 //-----------------------------------------------------------------------
 // Save check point files, but no restart
 CheckPoint::CheckPoint( EW* a_ew,
-			int cycle, 
+			int cycle,
 			int cycleInterval,
 			string fname,
 			size_t bufsize ) :
@@ -127,15 +127,15 @@ void CheckPoint::setup_sizes( )
       }
 
       m_ihavearray.resize( mEW->mNumberOfGrids );
-         
+
       int ghost_points = mEW->getNumberOfGhostPoints();
 // tmp
 //      printf("CheckPoint: Number of ghost points = %d\n", ghost_points);
-      
+
       for( int g=0 ; g < mEW->mNumberOfGrids ; g++ )
       {
 // With attenuation, the memory variables must be saved at all ghost points. This is because the memory variables satisfy
-// ODEs at all points, and do not satify any boundary conditions 
+// ODEs at all points, and do not satify any boundary conditions
 
          if (mEW->getLocalBcType(g, 0) == bProcessor)
             mWindow[g][0] = mEW->m_iStartInt[g];
@@ -146,17 +146,17 @@ void CheckPoint::setup_sizes( )
             mWindow[g][1] = mEW->m_iEndInt[g];
          else
             mWindow[g][1] = mEW->m_iEndInt[g] + ghost_points;
-         
+
          if (mEW->getLocalBcType(g, 2) == bProcessor)
             mWindow[g][2] = mEW->m_jStartInt[g];
          else
             mWindow[g][2] = mEW->m_jStartInt[g] - ghost_points;;
-            
+
          if (mEW->getLocalBcType(g, 3) == bProcessor)
             mWindow[g][3] = mEW->m_jEndInt[g];
          else
             mWindow[g][3] = mEW->m_jEndInt[g] + ghost_points;
-            
+
 // all points in k-dir are local to each proc
 	 mWindow[g][4] = mEW->m_kStartInt[g]-ghost_points; // need 1 ghost point at MR interface
 	 mWindow[g][5] = mEW->m_kEndInt[g]+ghost_points; // and all ghost points at bottom
@@ -180,10 +180,10 @@ void CheckPoint::setup_sizes( )
 // tmp
       if (mEW->proc_zero())
          cout << "Checkpoint::setup_sizes: Calling define_pio()..." << endl;
-      
+
       define_pio();
    } // end if doRestart || doCheckpointing
-   
+
    //   cout << "mwind = " << mWindow[0][4] << " " << mWindow[0][5] << endl;
    //   cout << "globaldims = " << mGlobalDims[0][4] << " " << mGlobalDims[0][5] << endl;
 }
@@ -226,7 +226,7 @@ void CheckPoint::define_pio( )
       MPI_Comm_size( MPI_COMM_WORLD, &nproc );
       MPI_Comm_rank( MPI_COMM_WORLD, &myid);
 
-      // new hack 
+      // new hack
       int* owners = new int[nproc];
       int i=0;
       for( int p=0 ; p<nproc ; p++ )
@@ -265,7 +265,7 @@ void CheckPoint::define_pio( )
 	 tmp=start[0];
 	 start[0]=start[2];
 	 start[2]=tmp;
-      }      
+      }
       if (mEW->proc_zero())
          cout << "Creating a Parallel_IO object for grid g = " << g << endl;
       m_parallel_io[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start, m_bufsize );
@@ -320,8 +320,9 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
 				   vector<Sarray>& a_U, vector<Sarray*>& a_AlphaVEm,
 				   vector<Sarray*>& a_AlphaVE )
 {
+	std::cout << " Staring to write checkpoint! " << std::endl;
    //
-   //File format: 
+   //File format:
    //
    //    header (see routine write_header)
    //    for g=1,number of grids
@@ -335,7 +336,7 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
    //
 
    //
-   // Would it be possible to save the entire input file to the restart file ? 
+   // Would it be possible to save the entire input file to the restart file ?
    //
    int ng       = mEW->mNumberOfGrids;
 //   off_t offset = (4+6*ng)*sizeof(int) + 2*sizeof(float_sw4);
@@ -365,7 +366,7 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
    int fid=-1;
    if( m_parallel_io[0]->proc_zero() )
    {
-      fid = open( const_cast<char*>(s.str().c_str()), O_CREAT | O_TRUNC | O_WRONLY, 0660 ); 
+      fid = open( const_cast<char*>(s.str().c_str()), O_CREAT | O_TRUNC | O_WRONLY, 0660 );
       CHECK_INPUT(fid != -1, "CheckPoint::write_file: Error opening: " << s.str() );
       int myid;
 
@@ -373,7 +374,7 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
       std::cout << "writing check point on file " << s.str() << " using " <<
 	 m_parallel_io[0]->n_writers() << " writers" << std::endl;
       write_header( fid, a_time, a_cycle, hsize );
-      fsync(fid); 
+      fsync(fid);
    }
    //   m_parallel_io[0]->writer_barrier();
    int bcast_root = m_parallel_io[0]->proc_zero_rank_in_comm_world();
@@ -399,11 +400,11 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
 
       if( !mEW->usingParallelFS() || g == 0 )
 	 m_parallel_io[g]->writer_barrier();
-      
+
       size_t nptsloc = (size_t) (mWindow[g][1] - mWindow[g][0]+1)*
          (mWindow[g][3] - mWindow[g][2]+1)*
          (mWindow[g][5] - mWindow[g][4]+1);
-      
+
       // allocate local buffer array
       float_sw4* doubleField = new float_sw4[3*nptsloc];
       if( m_kji_order )
@@ -459,6 +460,8 @@ void CheckPoint::write_checkpoint( float_sw4 a_time, int a_cycle, vector<Sarray>
    }
    if( iwrite )
       close(fid);
+
+	std::cout << "Done writing checkpoint!" << std::endl;
 } // end write_checkpoint()
 
 //-----------------------------------------------------------------------
@@ -467,7 +470,7 @@ void CheckPoint::read_checkpoint( float_sw4& a_time, int& a_cycle,
 				  vector<Sarray*>& a_AlphaVEm, vector<Sarray*>& a_AlphaVE )
 {
    //
-   // It is assumed that the arrays are already declared with the right 
+   // It is assumed that the arrays are already declared with the right
    // dimensions. This routine will check that sizes match, but will not
    // allocate or resize the arrays Um and U, AlphaVEm, AlphaVE
    //
@@ -492,7 +495,7 @@ void CheckPoint::read_checkpoint( float_sw4& a_time, int& a_cycle,
    int hsize;
    if( m_parallel_io[0]->proc_zero() )
    {
-      fid = open( const_cast<char*>(s.str().c_str()), O_RDONLY ); 
+      fid = open( const_cast<char*>(s.str().c_str()), O_RDONLY );
       CHECK_INPUT(fid != -1, "CheckPoint::read_checkpoint: Error opening: " << s.str() );
       int myid;
 
@@ -536,9 +539,9 @@ void CheckPoint::read_checkpoint( float_sw4& a_time, int& a_cycle,
          (mWindow[g][5] - mWindow[g][4]+1);
 
       if( !mEW->usingParallelFS() || g == 0 )
-	 m_parallel_io[g]->writer_barrier();      
+	 m_parallel_io[g]->writer_barrier();
 
-      // array with ghost points in k-ONLY read into doubleField, 
+      // array with ghost points in k-ONLY read into doubleField,
       float_sw4* doubleField = new float_sw4[3*nptsloc];
       if( m_kji_order )
       {
@@ -608,7 +611,7 @@ float_sw4 CheckPoint::getDt()
       else if( mEW->getPath() != "./" )
 	 s << mEW->getPath();
       s << mRestartFile; // string 's' is the file name including path
-      int fid = open( const_cast<char*>(s.str().c_str()), O_RDONLY ); 
+      int fid = open( const_cast<char*>(s.str().c_str()), O_RDONLY );
       CHECK_INPUT(fid != -1, "CheckPoint::getDt: Error opening: " << s.str() );
       lseek(fid,3*sizeof(int)+sizeof(float_sw4),SEEK_SET);
       size_t nr=read(fid,&dt,sizeof(float_sw4));
@@ -616,7 +619,7 @@ float_sw4 CheckPoint::getDt()
 	 "CheckPoint::getDt, error reading time step from restart file\n");
       close(fid);
    }
-   MPI_Bcast( &dt, 1, mEW->m_mpifloat, 0, MPI_COMM_WORLD );      
+   MPI_Bcast( &dt, 1, mEW->m_mpifloat, 0, MPI_COMM_WORLD );
    return dt;
 }
 
@@ -634,7 +637,7 @@ void CheckPoint::write_header( int& fid, float_sw4 a_time, int a_cycle,
    //                dims(g,1:6) - Size of array on grid g,
    //                       dim(1) <= i <= dim(2), dim(3) <= j <= dim(4)
    //                       dim(5) <= k <= dim(6)
-   //   
+   //
    int prec = m_double ? 8 : 4;
    size_t ret = write(fid,&prec,sizeof(int));
    CHECK_INPUT( ret == sizeof(int),"CheckPoint::write_header: Error writing precision" );
@@ -667,8 +670,8 @@ void CheckPoint::write_header( int& fid, float_sw4 a_time, int a_cycle,
       globalSize[5] = mGlobalDims[g][5]-mGlobalDims[g][4]+1;
       ret = write( fid, globalSize, 6*sizeof(int) );
       CHECK_INPUT( ret == 6*sizeof(int),"CheckPoint::write_header: Error writing global sizes" );
-      //      cout << "wrote global size " << globalSize[0] << " " << globalSize[1] << " " << globalSize[2] << " " 
-      //	   << globalSize[3] << " " << globalSize[4] << " " << globalSize[5] << endl; 
+      //      cout << "wrote global size " << globalSize[0] << " " << globalSize[1] << " " << globalSize[2] << " "
+      //	   << globalSize[3] << " " << globalSize[4] << " " << globalSize[5] << endl;
    }
    hsize = (4+6*ng)*sizeof(int) + 2*sizeof(float_sw4);
 }
@@ -687,11 +690,11 @@ void CheckPoint::read_header( int& fid, float_sw4& a_time, int& a_cycle,
    //                dims(g,1:6) - Size of array on grid g,
    //                       dim(1) <= i <= dim(2), dim(3) <= j <= dim(4)
    //                       dim(5) <= k <= dim(6)
-   //   
+   //
    int prec;
    size_t ret = read(fid,&prec,sizeof(int));
    CHECK_INPUT( ret == sizeof(int),"CheckPoint::read_header: Error reading precision" );
-   CHECK_INPUT( (m_double && prec==8) || (!m_double && prec==4), 
+   CHECK_INPUT( (m_double && prec==8) || (!m_double && prec==4),
 		"CheckPoint::read_header, floating point precision on restart file" <<
 		" does not match precision in solver");
    int ng;
@@ -742,7 +745,7 @@ void CheckPoint::read_header( int& fid, float_sw4& a_time, int& a_cycle,
 //-----------------------------------------------------------------------
 void CheckPoint::cycle_checkpoints( string CheckPointFile )
 {
-   // Keep previous check point, remove the second previous. 
+   // Keep previous check point, remove the second previous.
    // m_fileno is initialized to zero in constructor.
    m_fileno++;
    if( m_fileno >= 3 )

@@ -620,11 +620,155 @@ EW::
 {
 //  msgStream.close();
 }
+void EW::restore_types(MPI_Datatype * types, int types_size)
+{
+	int offset = 0;
+
+	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
+	{
+		m_send_type1.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
+	{
+		m_send_type3.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
+	{
+		m_send_type4.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
+	{
+		m_send_type21.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < 2; i++, offset++)
+	{
+		m_send_type_2dfinest[i] = (types[offset]);
+	}
+
+	for(int i = 0; i < 2; i++, offset++)
+	{
+		m_send_type_2dfinest_ext[i] = (types[offset]);
+	}
+
+	for(int i = 0; i < (mNumberOfGrids - mNumberOfCartesianGrids); i++, offset++)
+	{
+		m_send_type_isurfx.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < (mNumberOfGrids - mNumberOfCartesianGrids); i++, offset++)
+	{
+		m_send_type_isurfy.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dx.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dy.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dx3p.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dy3p.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dx1p.push_back(types[offset]);
+	}
+
+	for(int i = 0; i < mNumberOfGrids; i++, offset++)
+	{
+		m_send_type_2dy1p.push_back(types[offset]);
+	}
+
+	//debug_datatypes();
+}
+
+void EW::debug_datatypes()
+{
+	for(int i = 0; i < m_send_type1.size(); i++)
+	{
+		std::cout << "Send1[" << i << "] " << m_send_type1[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type3.size(); i++)
+	{
+		std::cout << "Send3[" << i << "] " << (int)m_send_type3[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type4.size(); i++)
+	{
+		std::cout << "Send4[" << i << "] " << (int)m_send_type4[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type21.size(); i++)
+	{
+		std::cout << "Send21[" << i << "] " << (int)m_send_type21[i] << std::endl;
+	}
+
+	// THESE ARE HARD_CODED!
+	for(int i = 0; i < 2; i++)
+	{
+		std::cout << "m_send_type_2dfinest[" << i << "] " << (int)m_send_type_2dfinest[i] << std::endl;
+	}
+	for(int i = 0; i < 2; i++)
+	{
+		std::cout << "m_send_type_2dfinest_ext[" << i << "] " << (int)m_send_type_2dfinest_ext[i] << std::endl;
+	}
+
+	for(int i = 0; i < m_send_type_isurfx.size(); i++)
+	{
+		std::cout << "m_send_type_isurfx[" << i << "] " << (int)m_send_type_isurfx[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type_isurfy.size(); i++)
+	{
+		std::cout << "m_send_type_isurfy[" << i << "] " << (int)m_send_type_isurfy[i] << std::endl;
+	}
+
+	// Final set
+	for(int i = 0; i < m_send_type_2dx.size(); i++)
+	{
+		std::cout << "m_send_type_2dx[" << i << "] " << (int)m_send_type_2dx[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type_2dy.size(); i++)
+	{
+		std::cout << "m_send_type_2dy[" << i << "] " << (int)m_send_type_2dy[i] << std::endl;
+	}
+
+	for(int i = 0; i < m_send_type_2dx3p.size(); i++)
+	{
+		std::cout << "m_send_type_2dx3p[" << i << "] " << (int)m_send_type_2dx3p[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type_2dy3p.size(); i++)
+	{
+		std::cout << "m_send_type_2dy3p[" << i << "] " << (int)m_send_type_2dy3p[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type_2dx1p.size(); i++)
+	{
+		std::cout << "m_send_type_2dx1p[" << i << "] " << (int)m_send_type_2dx1p[i] << std::endl;
+	}
+	for(int i = 0; i < m_send_type_2dy1p.size(); i++)
+	{
+		std::cout << "m_send_type_2dy1p[" << i << "] " << (int)m_send_type_2dy1p[i] << std::endl;
+	}
+}
 
 vector<MPI_Datatype> EW::get_all_datatypes()
 {
+	//debug_datatypes();
 	vector<MPI_Datatype> the_types;
 	//go through each varaible and add it to the list
+
 	the_types.insert(the_types.end(), m_send_type1.begin(), m_send_type1.end());
 	the_types.insert(the_types.end(), m_send_type3.begin(), m_send_type3.end());
 	the_types.insert(the_types.end(), m_send_type4.begin(), m_send_type4.end());

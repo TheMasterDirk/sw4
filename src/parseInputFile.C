@@ -348,7 +348,10 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
   allocateCartesianSolverArrays(m_global_zmax);
 
 // setup 2D communicators on the finest grid so that we can smooth the topography
+if(stages_epoch == 0)
+{
   setup2D_MPICommunications();
+}
 
 // deal with topography
   if (m_topography_exists)
@@ -409,15 +412,9 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
 // setup communicators for 3D solutions on all grids
 if(stages_epoch == 0)
 {
-  std::cout << "D: " <<   stages_epoch << std::endl;
   setupMPICommunications();
 }
-else
-{
-	std::cout << "Q: " <<   stages_epoch << std::endl;
-	//MPIX_Deserialize_handles();
-	setupMPICommunications();
-}
+
 
 // Make curvilinear grid and compute metric
   for( int g=mNumberOfCartesianGrids ; g < mNumberOfGrids ; g++ )
