@@ -163,7 +163,7 @@ void Comminfo::print( int recv )
 
 //-----------------------------------------------------------------------
 Parallel_IO::Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsizes[3],
-		  int starts[3], int nptsbuf, int padding )
+		  int starts[3], int nptsbuf, int padding, MPI_Comm write_c, MPI_Comm data_c)
 {
 // Input: iwrite - 0 this processor will not participate in I/O op.
 //                 1 this processor will participate in I/O op.
@@ -195,6 +195,8 @@ Parallel_IO::Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsize
 //       the halo (ghost points) will not be defined. If this option is used, it is the
 //       responsibility of the user to update the halo points after the array is read.
 //
+   m_write_comm = write_c;
+   m_data_comm = data_c;
    m_zerorank_in_commworld = -1;
    int ihave_array=1;
    if( localsizes[0] < 1 || localsizes[1] < 1 || localsizes[2] < 1 )
@@ -269,7 +271,8 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
    MPI_Comm_rank( MPI_COMM_WORLD, &gproc );
 
 // 0. Default communicators are NULL.
-   m_data_comm = m_write_comm = MPI_COMM_NULL;
+// Had to disable for stages; they are now set in CONSTRUCTOR
+//   m_data_comm = m_write_comm = MPI_COMM_NULL;
 
 // 1. Create communicator of all procs that either hold part of the array or will perform I/O.
 //    Save as m_data_comm. This communicator will be used for most operations.
@@ -280,26 +283,26 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
       MPI_Comm_size( MPI_COMM_WORLD, &nprocs );
       try
       {
-	 tmp      = new int[nprocs];
+         tmp = new int[nprocs];
       }
       catch( bad_alloc& ba )
       {
-	 cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of tmp failed. "
-	      << " nprocs = " << nprocs << endl;
-	 MPI_Abort(MPI_COMM_WORLD,0);
+         cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of tmp failed. "
+         << " nprocs = " << nprocs << endl;
+         MPI_Abort(MPI_COMM_WORLD,0);
       }
 
       int participator = ihave_array || iwrite;
       retcode = MPI_Allgather( &participator, 1, MPI_INT, tmp, 1, MPI_INT, MPI_COMM_WORLD );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from first call to MPI_Allgather, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from first call to MPI_Allgather, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
       int npartprocs = 0;
       for( p = 0 ; p < nprocs ; p++ )
-	 if( tmp[p] == 1 )
-	    npartprocs++;
+         if( tmp[p] == 1 )
+           npartprocs++;
       if( npartprocs < 1 )
       {
 	 // error
@@ -310,60 +313,67 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
       int* array_holders;
       try
       {
-	 array_holders = new int[npartprocs];
+         array_holders = new int[npartprocs];
       }
       catch( bad_alloc &ba )
       {
-	 cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of array_holders failed. "
-	      << " npartprocs = " << npartprocs << endl;
-	 MPI_Abort(MPI_COMM_WORLD,0);
+         cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of array_holders failed. "
+         << " npartprocs = " << npartprocs << endl;
+         MPI_Abort(MPI_COMM_WORLD,0);
       }
       i = 0;
       for( p=0 ; p < nprocs ; p++ )
       {
-	 if( tmp[p] == 1 )
-	    array_holders[i++] = p;
+         if( tmp[p] == 1 )
+           array_holders[i++] = p;
       }
       delete[] tmp;
       if( i != npartprocs )
-	 cout << "Parallel_IO::init_pio, ERROR: this should never happen " << endl;
+         cout << "Parallel_IO::init_pio, ERROR: this should never happen " << endl;
 
       retcode = MPI_Comm_group( MPI_COMM_WORLD, &world_group );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from first call to MPI_Comm_group, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from first call to MPI_Comm_group, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
 
       bool array_ok=true;
       i = 0;
       while( array_ok && i < npartprocs )
       {
-	 if( array_holders[i] <0 || array_holders[i] > nprocs-1 )
-	 {
-	    cout <<"ERROR in parallel_IO:init_pio myid= " << gproc << " array_holders[" << i << "]= "
-		 <<  array_holders[i] << " npartprocs = " << npartprocs << " nprocs = " << nprocs << endl;
-	    array_ok = false;
-	 }
-	 else
-	    i++;
+         if( array_holders[i] <0 || array_holders[i] > nprocs-1 )
+         {
+           cout <<"ERROR in parallel_IO:init_pio myid= " << gproc << " array_holders[" << i << "]= "
+           <<  array_holders[i] << " npartprocs = " << npartprocs << " nprocs = " << nprocs << endl;
+           array_ok = false;
+         }
+         else
+           i++;
       }
 
-      retcode = MPI_Group_incl( world_group, npartprocs, array_holders, &array_group );
-      if( retcode != MPI_SUCCESS )
-      {
-	 cout << "Parallel_IO::init_pio, error from first call to MPI_Group_incl, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
-      }
+			if(m_data_comm == MPI_COMM_NULL)
+			{
+	      retcode = MPI_Group_incl( world_group, npartprocs, array_holders, &array_group );
+	      if( retcode != MPI_SUCCESS )
+	      {
+	        cout << "Parallel_IO::init_pio, error from first call to MPI_Group_incl, "
+	        << "return code = " << retcode << " from processor " << gproc << endl;
+	      }
 
-      retcode = MPI_Comm_create( MPI_COMM_WORLD, array_group, &m_data_comm );
-      if( retcode != MPI_SUCCESS )
-      {
-	 cout << "Parallel_IO::init_pio, error from first call to MPI_Comm_create, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
-      }
-      MPI_Group_free( &world_group );
-      MPI_Group_free( &array_group );
+	      retcode = MPI_Comm_create( MPI_COMM_WORLD, array_group, &m_data_comm );
+	      if( retcode != MPI_SUCCESS )
+	      {
+	        cout << "Parallel_IO::init_pio, error from first call to MPI_Comm_create, "
+	        << "return code = " << retcode << " from processor " << gproc << endl;
+	      }
+	      MPI_Group_free( &world_group );
+	      MPI_Group_free( &array_group );
+			}
+			else
+			{
+				std::cout << "RESTORING m_data_comm!" << std::endl;
+			}
       delete[] array_holders;
    }
 
@@ -375,24 +385,24 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
       m_iwrite = iwrite;
       try
       {
-	 tmp      = new int[nprocs];
+         tmp = new int[nprocs];
       }
       catch( bad_alloc &ba )
       {
-	 cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of second tmp failed. "
-	      << " nprocs = " << nprocs << endl;
-	 MPI_Abort(MPI_COMM_WORLD,0);
+         cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of second tmp failed. "
+         << " nprocs = " << nprocs << endl;
+         MPI_Abort(MPI_COMM_WORLD,0);
       }
       retcode = MPI_Allgather( &m_iwrite, 1, MPI_INT, tmp, 1, MPI_INT, m_data_comm );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from second call to MPI_Allgather, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from second call to MPI_Allgather, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
       m_nwriters = 0;
       for( p = 0 ; p < nprocs ; p++ )
-	 if( tmp[p] == 1 )
-	    m_nwriters++;
+         if( tmp[p] == 1 )
+           m_nwriters++;
       if( m_nwriters < 1 )
       {
          cout << "ERROR 2 in Parallel_IO::init_pio, there are no writing processors left, nwriters = " << m_nwriters << endl;
@@ -402,43 +412,50 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
  // writer_ids are the processor ids of the writer processors in the enumeration by the m_data_comm group.
       try
       {
-	 m_writer_ids = new int[m_nwriters];
+         m_writer_ids = new int[m_nwriters];
       }
       catch( bad_alloc &ba )
       {
-	 cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of m_writer_ids failed. "
-	      << " nwriters = " << m_nwriters << endl;
-	 MPI_Abort(MPI_COMM_WORLD,0);
+         cout << "Parallel_IO::init_pio, processor " << gproc << ". Allocation of m_writer_ids failed. "
+         << " nwriters = " << m_nwriters << endl;
+         MPI_Abort(MPI_COMM_WORLD,0);
       }
       i = 0;
       for( p=0 ; p < nprocs ; p++ )
       {
-	 if( tmp[p] == 1 )
-	    m_writer_ids[i++] = p;
+         if( tmp[p] == 1 )
+         m_writer_ids[i++] = p;
       }
       delete[] tmp;
 
+			if(m_write_comm == MPI_COMM_NULL)
+			{
       retcode = MPI_Comm_group( m_data_comm, &world_group );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from second call to MPI_Comm_group, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from second call to MPI_Comm_group, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
       retcode = MPI_Group_incl( world_group, m_nwriters, m_writer_ids, &writer_group );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from second call to MPI_Group_incl, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from second call to MPI_Group_incl, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
 
       retcode = MPI_Comm_create( m_data_comm, writer_group, &m_write_comm );
       if( retcode != MPI_SUCCESS )
       {
-	 cout << "Parallel_IO::init_pio, error from second call to MPI_Comm_create, "
-	      << "return code = " << retcode << " from processor " << gproc << endl;
+         cout << "Parallel_IO::init_pio, error from second call to MPI_Comm_create, "
+         << "return code = " << retcode << " from processor " << gproc << endl;
       }
       MPI_Group_free( &world_group );
       MPI_Group_free( &writer_group );
+			}
+			else
+			{
+				std::cout << "RESTORING WRITE COMM!" << std::endl;
+			}
    }
    // 3. Save parallel file system info
    m_parallel_file_system = pfs;

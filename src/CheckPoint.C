@@ -268,7 +268,10 @@ void CheckPoint::define_pio( )
       }
       if (mEW->proc_zero())
          cout << "Creating a Parallel_IO object for grid g = " << g << endl;
-      m_parallel_io[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start, m_bufsize );
+			if(mEW->get_s_epoch() != 0)
+      	m_parallel_io[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start, m_bufsize, 0, mpio_write, mpio_data);
+			else
+				m_parallel_io[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start, m_bufsize );
 // tmp
       if (mEW->proc_zero())
          cout << "Done creating the Parallel_IO object" << endl;

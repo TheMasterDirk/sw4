@@ -43,6 +43,11 @@ public:
    std::string get_restart_path();
 
 	 Parallel_IO* get_pio() {return m_parallel_io[0];};
+	 void set_wd_comms(MPI_Comm write_comm, MPI_Comm data_comm)
+	 {
+		 mpio_write = write_comm;
+		 mpio_data = data_comm;
+	 }
 
 protected:
    void define_pio( );
@@ -82,6 +87,10 @@ private:
    std::vector<int*> mWindow; // Local in processor start + end indices for (i,j,k) for each grid level
    std::vector<int*> mGlobalDims; // Global start + end indices for (i,j,k) for each grid level
    std::vector<bool> m_ihavearray;
+
+	 // Stages variables
+	 MPI_Comm mpio_write;
+	 MPI_Comm mpio_data;
 };
 
 #endif

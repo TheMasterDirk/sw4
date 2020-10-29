@@ -98,6 +98,7 @@ vector<MPI_Comm> get_all_comms();
 int get_s_epoch() {return stages_epoch;};
 void save_mpi_objects(MPIX_Handles handle);
 void restore_comms();
+void restore_special_comm();
 void restore_types();
 void debug_datatypes();
 void parseInputStages();

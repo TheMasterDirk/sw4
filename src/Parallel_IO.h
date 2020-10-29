@@ -70,7 +70,8 @@ class Parallel_IO
 {
 public:
    Parallel_IO( int iwrite, int pfs, int globalsizes[3], int localsizes[3],
-	    int starts[3], int nptsbuf=8000000, int padding=0 );
+	    int starts[3], int nptsbuf=8000000, int padding=0,
+	    MPI_Comm write_c=MPI_COMM_NULL, MPI_Comm data_c=MPI_COMM_NULL);
    void write_array( int* fid, int nc, void* array, off_t pos0, char* type );
 #ifdef USE_HDF5
    void write_array_hdf5( const char* fname, const char *gname, const char *dname, int nc, void* array, hsize_t pos0, char* type );

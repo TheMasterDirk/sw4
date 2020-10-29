@@ -636,16 +636,20 @@ void EW::save_mpi_objects(MPIX_Handles handle)
 
 void EW::parseInputStages()
 {
-	restore_comms();
+	restore_special_comm();
 	if( parseInputFile( ew_a_GlobalUniqueSources, ew_a_GlobalTimeSeries ))
 		mParsingSuccessful = true;
+	restore_comms();
 	restore_types();
+}
+
+void EW::restore_special_comm()
+{
+	m_cartesian_communicator = saved_comms[num_comms_saved-1];
 }
 
 void EW::restore_comms()
 {
-
-	m_cartesian_communicator = saved_comms[num_comms_saved-1];
 	//for(int i = 0; i < num_comms_saved; i++)
 	//{
 		//if(i < )
@@ -654,6 +658,9 @@ void EW::restore_comms()
 		//else
 			// Restore the m_cartesian_communicator;
 	//}
+
+	m_check_point->set_wd_comms(saved_comms[num_comms_saved-3],saved_comms[num_comms_saved-2]);
+
 	delete[] saved_comms;
 	delete[] saved_groups;
 }
