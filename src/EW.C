@@ -359,6 +359,8 @@ EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
        vector<vector<TimeSeries*> > & a_GlobalTimeSeries, int the_epoch_num, bool a_invproblem ):
 //  m_epi_lat(0.0), m_epi_lon(0.0), m_epi_depth(0.0), m_epi_t0(0.0),
 //  m_topo_zmax(0.0),
+  ew_a_GlobalUniqueSources(a_GlobalSources),
+  ew_a_GlobalTimeSeries(a_GlobalTimeSeries),
   m_topoInputStyle(UNDEFINED),
   mTopoImageFound(false),
   m_nx_base(0), m_ny_base(0), m_nz_base(0), m_h_base(0.0),
@@ -580,8 +582,8 @@ EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
    m_epi_lon.resize(m_nevent);
    m_epi_depth.resize(m_nevent);
    m_epi_t0.resize(m_nevent);
-   a_GlobalSources.resize(m_nevent);
-   a_GlobalTimeSeries.resize(m_nevent);
+   ew_a_GlobalUniqueSources.resize(m_nevent);
+   ew_a_GlobalTimeSeries.resize(m_nevent);
    mPath.resize(m_nevent);
    mObsPath.resize(m_nevent);
    mTmax.resize(m_nevent);
@@ -603,9 +605,10 @@ EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
       m_utc0[e].resize(7);
    }
 
-   if (parseInputFile( a_GlobalSources, a_GlobalTimeSeries ))
+	 std::cout << "HERE" << std::endl;
+   if (the_epoch_num == 0 && parseInputFile( ew_a_GlobalUniqueSources, ew_a_GlobalTimeSeries ))
      mParsingSuccessful = true;
-
+	 std::cout << "HERE" << std::endl;
 // AP: need to figure out a better way of handling these error log files
 //
    // char fname[100];
@@ -620,81 +623,118 @@ EW::
 {
 //  msgStream.close();
 }
-void EW::restore_types(MPI_Datatype * types, int types_size)
+
+void EW::save_mpi_objects(MPIX_Handles handle)
+{
+	num_comms_saved = handle.comm_size;
+	num_types_saved = handle.type_size;
+	num_groups_saved = handle.group_size;
+	saved_comms = handle.comms;
+	saved_groups = handle.grps;
+	saved_types = handle.dtypes;
+}
+
+void EW::parseInputStages()
+{
+	restore_comms();
+	if( parseInputFile( ew_a_GlobalUniqueSources, ew_a_GlobalTimeSeries ))
+		mParsingSuccessful = true;
+	restore_types();
+}
+
+void EW::restore_comms()
+{
+
+	m_cartesian_communicator = saved_comms[num_comms_saved-1];
+	//for(int i = 0; i < num_comms_saved; i++)
+	//{
+		//if(i < )
+		//else if (i <)
+		//else if (i < )
+		//else
+			// Restore the m_cartesian_communicator;
+	//}
+	delete[] saved_comms;
+	delete[] saved_groups;
+}
+
+
+void EW::restore_types()
 {
 	int offset = 0;
 
 	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
 	{
-		m_send_type1.push_back(types[offset]);
+		m_send_type1.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
 	{
-		m_send_type3.push_back(types[offset]);
+		m_send_type3.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
 	{
-		m_send_type4.push_back(types[offset]);
+		m_send_type4.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < 2*mNumberOfGrids; i++, offset++)
 	{
-		m_send_type21.push_back(types[offset]);
+		m_send_type21.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < 2; i++, offset++)
 	{
-		m_send_type_2dfinest[i] = (types[offset]);
+		m_send_type_2dfinest[i] = (saved_types[offset]);
 	}
 
 	for(int i = 0; i < 2; i++, offset++)
 	{
-		m_send_type_2dfinest_ext[i] = (types[offset]);
+		m_send_type_2dfinest_ext[i] = (saved_types[offset]);
 	}
 
 	for(int i = 0; i < (mNumberOfGrids - mNumberOfCartesianGrids); i++, offset++)
 	{
-		m_send_type_isurfx.push_back(types[offset]);
+		m_send_type_isurfx.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < (mNumberOfGrids - mNumberOfCartesianGrids); i++, offset++)
 	{
-		m_send_type_isurfy.push_back(types[offset]);
+		m_send_type_isurfy.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dx.push_back(types[offset]);
+		m_send_type_2dx.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dy.push_back(types[offset]);
+		m_send_type_2dy.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dx3p.push_back(types[offset]);
+		m_send_type_2dx3p.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dy3p.push_back(types[offset]);
+		m_send_type_2dy3p.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dx1p.push_back(types[offset]);
+		m_send_type_2dx1p.push_back(saved_types[offset]);
 	}
 
 	for(int i = 0; i < mNumberOfGrids; i++, offset++)
 	{
-		m_send_type_2dy1p.push_back(types[offset]);
+		m_send_type_2dy1p.push_back(saved_types[offset]);
 	}
 
-	//debug_datatypes();
+	delete[] saved_types;
+	debug_datatypes();
 }
 
 void EW::debug_datatypes()
@@ -761,6 +801,37 @@ void EW::debug_datatypes()
 	{
 		std::cout << "m_send_type_2dy1p[" << i << "] " << (int)m_send_type_2dy1p[i] << std::endl;
 	}
+}
+
+vector<MPI_Comm> EW::get_all_comms()
+{
+	vector<MPI_Comm> the_comms;
+
+	// Each image has three communicators (2 from it's P_IO, and one from itself)
+	// the "two" per P_IO is a hardcoded value right now. in the future,
+	// probably need to get exact number.
+
+	// Save Image objects' communicator
+	for(int i = 0; i < mImageFiles.size(); i++)
+	{
+		the_comms.push_back(mImageFiles[i]->get_mpi_comm());
+		// The Parallel_IO object with each image
+		Parallel_IO* p_io = mImageFiles[i]->get_pio();
+		the_comms.push_back(p_io->get_write_comm());
+		the_comms.push_back(p_io->get_data_comm());
+	}
+
+	// Currently hardcoded to only look for one object,
+	// in the future I should make this be in a loop like
+	// how the objects are made.
+	Parallel_IO* check_pio = m_check_point->get_pio();
+	the_comms.push_back(check_pio->get_write_comm());
+	the_comms.push_back(check_pio->get_data_comm());
+
+	// Save Cartesian communicator -- inside EW object
+	the_comms.push_back(m_cartesian_communicator);
+
+	return the_comms;
 }
 
 vector<MPI_Datatype> EW::get_all_datatypes()

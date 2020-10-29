@@ -93,11 +93,14 @@ public:
       vector<vector<TimeSeries*> > & a_GlobalTimeSeries, int the_epoch_num, bool invproblem=false );
 ~EW();
 
-vector<Image *> get_image_vector(){return mImageFiles;};
 vector<MPI_Datatype> get_all_datatypes();
+vector<MPI_Comm> get_all_comms();
 int get_s_epoch() {return stages_epoch;};
-void restore_types(MPI_Datatype * types, int types_size);
+void save_mpi_objects(MPIX_Handles handle);
+void restore_comms();
+void restore_types();
 void debug_datatypes();
+void parseInputStages();
 
 bool wasParsingSuccessful();
 bool isInitialized();
@@ -1391,6 +1394,9 @@ private:
 void preprocessSources( vector<vector<Source*> >& a_GlobalSources );
 void revvector( int npts, float_sw4* v );
 
+vector<vector<Source*> > &ew_a_GlobalUniqueSources;   // A refernce to these objects
+vector<vector<TimeSeries*> > & ew_a_GlobalTimeSeries;	// Helpful for stages.
+
 int m_nevent; // Number of events, needed for multiple event material optimization.
 int m_nevents_specified; // Number of event lines in input file
 map<string,int> m_event_names;
@@ -1706,6 +1712,13 @@ vector<MPI_Datatype> m_send_type_2dy3p;
 vector<MPI_Datatype> m_send_type_2dx1p;
 vector<MPI_Datatype> m_send_type_2dy1p;
 int stages_epoch;
+
+int num_comms_saved;
+int num_types_saved;
+int num_groups_saved;
+MPI_Comm * saved_comms;
+MPI_Group* saved_groups;
+MPI_Datatype *saved_types;
 
 public:
 int m_neighbor[4];

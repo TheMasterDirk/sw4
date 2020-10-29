@@ -244,7 +244,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
 	    cout << "Maximum temporary file size on grid " << g << " is " << maxsize << " doubles for each time step "<<endl;
       }
    }
-
+	 std::cout << "At solve A" << std::endl;
 // Set the number of time steps, allocate the recording arrays, and set reference time in all time series objects
 #pragma omp parallel for
   for (int ts=0; ts<a_TimeSeries.size(); ts++)
@@ -284,7 +284,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
   //       printf("\n**** MPI-task #%d needs %d source terms  ********\n\n", proc, nSources);
   // }
 // end debug
-
+	 std::cout << "At solve B" << std::endl;
 // modification of time functions by prefiltering is currently done in preprocessSources()
   // only reported here
   if (!m_testing && m_prefilter_sources)
@@ -299,7 +299,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
 	       m_filter_ptr->get_corner_freq1(), m_filter_ptr->get_corner_freq2());
     }
   } // end if prefiltering
-
+std::cout << "At solve C" << std::endl;
 // AP changed to false
   bool output_timefunc = false;
   if( output_timefunc )
@@ -309,6 +309,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
 	has_source_id = m_myRank;
 
      MPI_Allreduce( &has_source_id, &has_source_max, 1, MPI_INT, MPI_MAX, m_cartesian_communicator );
+		 std::cout << "At solve D" << std::endl;
      if( m_myRank == has_source_max )
      {
        if (!mQuiet && mVerbose >=1 )
@@ -343,7 +344,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
        fclose(tf);
      }
   }
-
+std::cout << "At solve E" << std::endl;
   if( !mQuiet && mVerbose && proc_zero() )
   {
     cout << endl << "***  Starting solve ***" << endl;
@@ -360,7 +361,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
 // Sort sources wrt spatial location, needed for thread parallel computing
   vector<int> identsources;
   sort_grid_point_sources( point_sources, identsources );
-
+std::cout << "At solve F" << std::endl;
 // Assign initial data
   int beginCycle;
   float_sw4 t;
@@ -373,7 +374,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
      if (proc_zero())
         printf("After reading checkpoint data: beginCycle=%d, t=%e\n", beginCycle, t);
 // end tmp
-
+		std::cout << "At solve G" << std::endl;
      // Make sure the TimeSeries output has the correct time shift,
      // and know's it's a restart
      double timeSeriesRestartBegin = MPI_Wtime();
@@ -409,13 +410,13 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
      initialData(mTstart, U, AlphaVE);
      initialData(mTstart-mDt, Um, AlphaVEm );
   }
-
+std::cout << "At solve H" << std::endl;
   if ( !mQuiet && mVerbose && proc_zero() )
     cout << "  Initial data has been assigned" << endl;
 
 // do some testing...
   initial_tw_test( U, Up, F, a_Mu, a_Lambda, Lu, Uacc, AlphaVE, point_sources, identsources, t );
-
+std::cout << "At solve H.5" << std::endl;
 // after checkpoint restart, we must communicate the memory variables
   if(  m_check_point->do_restart() && m_use_attenuation && (m_number_mechanisms > 0) )
   {
@@ -426,6 +427,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
         for(int m=0 ; m < m_number_mechanisms; m++ )
            communicate_array( AlphaVE[g][m], g );
      }
+		 std::cout << "At solve I" << std::endl;
 // AlphaVEm
 // communicate across processor boundaries
      for(int g=0 ; g < mNumberOfGrids ; g++ )
@@ -433,8 +435,9 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
         for(int m=0 ; m < m_number_mechanisms; m++ )
            communicate_array( AlphaVEm[g][m], g );
      }
+		 std::cout << "At solve J" << std::endl;
   } // end if checkpoint restarting
-
+std::cout << "At solve J.5" << std::endl;
 
 // enforce bc on initial data
 // U
@@ -443,7 +446,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
     communicate_array( U[g], g );
 // boundary forcing
   cartesian_bc_forcing( t, BCForcing, a_Sources );
-
+std::cout << "At solve K" << std::endl;
 // enforce boundary condition
   if( m_anisotropic )
      enforceBCanisotropic( U, mC, t, BCForcing );
@@ -452,7 +455,7 @@ void EW::solve( vector<Source*> & a_Sources, vector<TimeSeries*> & a_TimeSeries,
 
   for( int g=mNumberOfCartesianGrids; g < mNumberOfGrids-1 ; g++ )
      m_cli2[g-mNumberOfCartesianGrids]->impose_ic( U, t, F, AlphaVE );
-
+std::cout << "At solve L" << std::endl;
 // Impose un-coupled free surface boundary condition with visco-elastic terms for 'Up'
 //  if( m_use_attenuation && (m_number_mechanisms > 0) )
 //  {

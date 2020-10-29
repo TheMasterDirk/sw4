@@ -2,33 +2,33 @@
 // # ----------------------------------------------------------------------
 // # SW4 - Seismic Waves, 4th order
 // # ----------------------------------------------------------------------
-// # Copyright (c) 2013, Lawrence Livermore National Security, LLC. 
-// # Produced at the Lawrence Livermore National Laboratory. 
-// # 
+// # Copyright (c) 2013, Lawrence Livermore National Security, LLC.
+// # Produced at the Lawrence Livermore National Laboratory.
+// #
 // # Written by:
 // # N. Anders Petersson (petersson1@llnl.gov)
 // # Bjorn Sjogreen      (sjogreen2@llnl.gov)
-// # 
-// # LLNL-CODE-643337 
-// # 
-// # All rights reserved. 
-// # 
+// #
+// # LLNL-CODE-643337
+// #
+// # All rights reserved.
+// #
 // # This file is part of SW4, Version: 1.0
-// # 
+// #
 // # Please also read LICENCE.txt, which contains "Our Notice and GNU General Public License"
-// # 
+// #
 // # This program is free software; you can redistribute it and/or modify
 // # it under the terms of the GNU General Public License (as published by
-// # the Free Software Foundation) version 2, dated June 1991. 
-// # 
+// # the Free Software Foundation) version 2, dated June 1991.
+// #
 // # This program is distributed in the hope that it will be useful, but
 // # WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
 // # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-// # conditions of the GNU General Public License for more details. 
-// # 
+// # conditions of the GNU General Public License for more details.
+// #
 // # You should have received a copy of the GNU General Public License
 // # along with this program; if not, write to the Free Software
-// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA 
+// # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
 #include "mpi.h"
 
 #include "EW.h"
@@ -37,7 +37,7 @@
 bool EW::proc_decompose_2d( int ni, int nj, int nproc, int proc_max[2] )
 {
    // This routine determines a decomposition of nproc processors into
-   // a 2D processor array  proc_max[0] x proc_max[1], which gives minimal 
+   // a 2D processor array  proc_max[0] x proc_max[1], which gives minimal
    // communication boundary for a grid with ni x nj points.
 
    float_sw4 fmin = ni+nj;
@@ -70,7 +70,7 @@ bool EW::proc_decompose_2d( int ni, int nj, int nproc, int proc_max[2] )
 //-----------------------------------------------------------------------
 void EW::coarsen1d( int& n, int& ifirst, int& ilast, int periodic )
 {
-   // n - total number of points 1<=i<=n, 
+   // n - total number of points 1<=i<=n,
    // Total index space is 1-ghosts <= i <= n + ghosts
    //
    // This routine coarsens the interval ifirst <= i <= ilast
@@ -82,7 +82,7 @@ void EW::coarsen1d( int& n, int& ifirst, int& ilast, int periodic )
       nc = n/2;
    else
       nc = (n-1)/2+1;
-   
+
    if( ilast == n + m_ghost_points )
       ilast = nc + m_ghost_points;
    else
@@ -109,10 +109,10 @@ void EW::decomp1d( int nglobal, int myid, int nproc, int& s, int& e )
 //
 // Decompose index space 1 <= i <= nglobal into nproc blocks
 //
-// Input: nglobal - Total number of points 
+// Input: nglobal - Total number of points
 //        myid    - Processor ID of current task,  0 <= myid <= nproc-1.
 //        nproc   - Total number of processors (tasks).
-//   
+//
 // Output: s - Low index in this processor.
 //         e - High index in this processor, ie, current task holds s <= i <= e
 //
@@ -144,7 +144,7 @@ void EW::decomp1d_2( int N, int myid, int nproc, int& s, int& e, int nghost, int
 //        nproc  - Total number of processors (tasks).
 //        nghost - Number of ghost points at domain boundaries.
 //        npad   - Number of overlap (padding) points at processor boundaries.
-//   
+//
 // Output: s - Low index in this processor.
 //         e - High index in this processor, ie, current task holds s <= i <= e
 //
@@ -237,7 +237,7 @@ void EW::setup2D_MPICommunications()
 //       MPI_Type_commit( &m_send_type_2dy1p[g] );
 //       MPI_Type_commit( &m_send_type_2dx3p[g] );
 //       MPI_Type_commit( &m_send_type_2dy3p[g] );
-//    }      
+//    }
 
 // For topography: finest grid (curvilinear) only, only one value per grid point (nc=1)
 // get the size from the top curvlinear grid
@@ -275,7 +275,7 @@ void EW::setup2D_MPICommunications()
       MPI_Type_commit( &m_send_type_isurfx[iSurf] );
       MPI_Type_commit( &m_send_type_isurfy[iSurf] );
    }
-   
+
 // For mesh refinement: 2D planes with three values per grid point (nc=3)
 // Coarser grids
    m_send_type_2dx.resize(mNumberOfGrids);
@@ -301,7 +301,7 @@ void EW::setup2D_MPICommunications()
       MPI_Type_commit( &m_send_type_2dy1p[g] );
       MPI_Type_commit( &m_send_type_2dx3p[g] );
       MPI_Type_commit( &m_send_type_2dy3p[g] );
-   }      
+   }
 
 // tmp
 //   cout << "***leaving setup2D_MPICommunications***"<< endl;
@@ -349,17 +349,17 @@ void EW::setupMPICommunications()
 //FTNC	 MPI_Type_vector( nj*nk, 21*m_ppadding, 21*ni, m_mpifloat, &m_send_type21[2*g] );
 //FTNC	 MPI_Type_vector( nk, 21*m_ppadding*ni, 21*ni*nj, m_mpifloat, &m_send_type21[2*g+1] );
 //FTNC      }
-      MPI_Type_commit( &m_send_type1[2*g] ); 
-      MPI_Type_commit( &m_send_type1[2*g+1] ); 
+      MPI_Type_commit( &m_send_type1[2*g] );
+      MPI_Type_commit( &m_send_type1[2*g+1] );
 
-      MPI_Type_commit( &m_send_type3[2*g] ); 
-      MPI_Type_commit( &m_send_type3[2*g+1] ); 
+      MPI_Type_commit( &m_send_type3[2*g] );
+      MPI_Type_commit( &m_send_type3[2*g+1] );
 
-      MPI_Type_commit( &m_send_type4[2*g] ); 
-      MPI_Type_commit( &m_send_type4[2*g+1] ); 
+      MPI_Type_commit( &m_send_type4[2*g] );
+      MPI_Type_commit( &m_send_type4[2*g+1] );
 
-      MPI_Type_commit( &m_send_type21[2*g] ); 
-      MPI_Type_commit( &m_send_type21[2*g+1] ); 
+      MPI_Type_commit( &m_send_type21[2*g] );
+      MPI_Type_commit( &m_send_type21[2*g+1] );
    }
 
 // test call
@@ -426,15 +426,16 @@ void EW::setupMPICommunications()
 //-----------------------------------------------------------------------
 void EW::communicate_array( Sarray& u, int grid )
 {
-  // REQUIRE2( 0 <= grid && grid < mU.size() , 
+  // REQUIRE2( 0 <= grid && grid < mU.size() ,
   // 	    " Error in communicate_array, grid = " << grid );
-   
+   std::cout << "CA1" << std::endl;
    REQUIRE2( u.m_nc == 21 || u.m_nc == 4 || u.m_nc == 3 || u.m_nc == 1, "Communicate array, only implemented for one-, three-, four-, and 21-component arrays"
 	     << " nc = " << u.m_nc );
    int ie = u.m_ie, ib=u.m_ib, je=u.m_je, jb=u.m_jb, ke=u.m_ke, kb=u.m_kb;
    MPI_Status status;
    if( u.m_nc == 1 )
    {
+		  std::cout << "CA11" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -443,40 +444,56 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(ie-(2*m_ppadding-1),jb,kb), 1, m_send_type1[2*grid], m_neighbor[1], xtag1,
 		    &u(ib,jb,kb), 1, m_send_type1[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA21" << std::endl;
       MPI_Sendrecv( &u(ib+m_ppadding,jb,kb), 1, m_send_type1[2*grid], m_neighbor[0], xtag2,
 		    &u(ie-(m_ppadding-1),jb,kb), 1, m_send_type1[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA31" << std::endl;
       // Y-direction communication
       MPI_Sendrecv( &u(ib,je-(2*m_ppadding-1),kb), 1, m_send_type1[2*grid+1], m_neighbor[3], ytag1,
 		    &u(ib,jb,kb), 1, m_send_type1[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA41" << std::endl;
       MPI_Sendrecv( &u(ib,jb+m_ppadding,kb), 1, m_send_type1[2*grid+1], m_neighbor[2], ytag2,
 		    &u(ib,je-(m_ppadding-1),kb), 1, m_send_type1[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA51" << std::endl;
    }
    else if( u.m_nc == 3 )
    {
+		  std::cout << "CA13" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
       int ytag2 = 348;
       // X-direction communication
+			std::cout << m_neighbor[1] << std::endl;
+			std::cout << grid << std::endl;
+			std::cout << m_send_type3[2*grid] << std::endl;
+			std::cout << m_neighbor[0] << std::endl;
+			std::cout << xtag1 << std::endl;
+			std::cout << m_cartesian_communicator << std::endl;
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type3[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type3[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA23" << std::endl;
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type3[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type3[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA33" << std::endl;
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type3[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type3[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA43" << std::endl;
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type3[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type3[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA53" << std::endl;
    }
    else if( u.m_nc == 4 )
    {
+		 std::cout << "CA14" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -485,19 +502,24 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type4[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type4[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
+		 std::cout << "CA24" << std::endl;
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type4[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type4[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
+						 std::cout << "CA34" << std::endl;
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type4[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type4[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
+						 std::cout << "CA44" << std::endl;
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type4[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type4[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
+						 std::cout << "CA54" << std::endl;
    }
    else if( u.m_nc == 21 )
    {
+		  std::cout << "CA121" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -506,17 +528,22 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type21[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type21[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
+					  std::cout << "CA221" << std::endl;
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type21[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type21[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA321" << std::endl;
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type21[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type21[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA421" << std::endl;
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type21[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type21[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
+						  std::cout << "CA521" << std::endl;
    }
+	std::cout << "CAE" << std::endl;
 }
 
 //-----------------------------------------------------------------------
@@ -634,7 +661,7 @@ void EW::communicate_array_2d_isurf( Sarray& u, int iSurf )
 void EW::communicate_array_2d_asym( Sarray& u, int g, int k )
 {
    REQUIRE2( u.m_nc == 3, "Communicate array 2d asym, only implemented for three-component arrays" );
-   REQUIRE2( g < m_send_type_2dx3p.size(), "Communicate array 2d asym, only implemented for grid=0.." 
+   REQUIRE2( g < m_send_type_2dx3p.size(), "Communicate array 2d asym, only implemented for grid=0.."
 	     << m_send_type_2dx3p.size()-1 << " but g= " << g);
    int ie = m_iEnd[g], ib=m_iStart[g];
    int je = m_jEnd[g], jb=m_jStart[g];
@@ -734,7 +761,7 @@ void EW::communicate_array_2dfinest( Sarray& u )
 
    int ie = u.m_ie, ib=u.m_ib, je=u.m_je, jb=u.m_jb;
    REQUIRE2( ib == m_iStart[mNumberOfGrids-1] && ie == m_iEnd[mNumberOfGrids-1] &&
-             jb == m_jStart[mNumberOfGrids-1] && je == m_jEnd[mNumberOfGrids-1] , 
+             jb == m_jStart[mNumberOfGrids-1] && je == m_jEnd[mNumberOfGrids-1] ,
              "Communicate array 2d: Can only use it on the finest grid, grid sizes don't match");
 
    MPI_Status status;

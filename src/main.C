@@ -62,25 +62,14 @@ void usage(string thereason)
 
 void s_handles(MPIX_Handles * handle)
 {
-	std::vector<Image *> v = simulation->get_image_vector();
-	// Each image has three communicators (2 from it's P_IO, and one from itself)
-	// the "two" per P_IO is a hardcoded value right now. in the future,
-	// probably need to get exact number.
-	handle->comm_size = v.size()*3 + 1 ;
+	// Save the communicators!
+	std::vector<MPI_Comm> lots_o_comms = simulation->get_all_comms();
+	handle->comm_size = lots_o_comms.size();
 	handle->comms = new MPI_Comm[handle->comm_size];
-
-	// Save Image objects' communicator
-	for(int i = 0; i < v.size(); i++)
+	for(int i = 0; i < lots_o_comms.size(); i++)
 	{
-		handle->comms[(i*3)] = v[i]->get_mpi_comm();
-		// The Parallel_IO object with each image
-		Parallel_IO* p_io = v[i]->get_pio();
-		handle->comms[(i*3)+1] = p_io->get_write_comm();
-		handle->comms[(i*3)+2] = p_io->get_data_comm();
+		handle->comms[i] = lots_o_comms[i];
 	}
-
-	// Save Cartesian communicator -- inside EW object
-	handle->comms[v.size()*3] = simulation->m_cartesian_communicator;
 
 	// SW4 doesn't need any extra groups to be saved (the comm groups are auto saved)
 	handle->grps = nullptr;
@@ -99,21 +88,7 @@ void s_handles(MPIX_Handles * handle)
 
 void d_handles(MPIX_Handles handle)
 {
-	// Restore the comms!
-	for(int i = 0; i < handle.comm_size; i++)
-	{
-		//if(i < )
-		//else if (i <)
-		//else if (i < )
-		//else
-			// Restore the m_cartesian_communicator;
-	}
-
-	// Restore the types!
-	simulation->restore_types(handle.dtypes, handle.type_size);
-	delete[] handle.dtypes;
-	delete[] handle.comms;
-	delete[] handle.grps;
+	simulation->save_mpi_objects(handle);
 }
 
 int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& fileName);
@@ -246,11 +221,12 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 
 // make a new simulation object by reading the input file 'fileName'
   simulation = std::make_unique<EW>(fileName, GlobalSources, GlobalTimeSeries, fault_epoch);
+	std::cout << "HERE " << std::endl;
 	if(fault_epoch > 0)
 	{
 		MPIX_Deserialize_handles();
 		std::cout << "Z: " <<   fault_epoch << std::endl;
-		//setupMPICommunications();
+		simulation->parseInputStages();
 	}
 
   if (!simulation->wasParsingSuccessful())
@@ -263,6 +239,7 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
   }
   else
   {
+		std::cout << "Before setup run" << std::endl;
 		// get the simulation object ready for time-stepping
 		simulation->setupRun( GlobalSources );
 		std::cout << "After setup run " << std::endl;
@@ -277,6 +254,7 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 		}
 		else
 		{
+			std::cout << "Before step idk what to call" << std::endl;
 			if (myRank == 0)
 			{
 				int nth=1;
@@ -311,12 +289,16 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 				cout << "Writing output to directory: " << simulation->getPath() << endl;
 			}
 // run the simulation
+
+			std::cout << "after idk step" << std::endl;
       int ng=simulation->mNumberOfGrids;
       vector<DataPatches*> upred_saved(ng), ucorr_saved(ng);
       vector<Sarray> U(ng), Um(ng), ph(ng);
+			std::cout << "before solve step" << std::endl;
       simulation->solve( GlobalSources[0], GlobalTimeSeries[0], simulation->mMu,
 			simulation->mLambda, simulation->mRho, U, Um, upred_saved,
 			ucorr_saved, false, 0, 0, 0, ph, fail_step );
+			std::cout << "after solve step" << std::endl;
 
 			int bob;
 			MPIX_FT_errno(&bob);

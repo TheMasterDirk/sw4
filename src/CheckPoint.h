@@ -18,7 +18,7 @@ public:
    static CheckPoint* nil; // nil pointer
    CheckPoint( EW * a_ew );
    CheckPoint( EW * a_ew,
-	       int cycle, 
+	       int cycle,
 	       int cycleInterval,
 	       string fname,
 	       size_t bufsize=10000000 );
@@ -41,6 +41,8 @@ public:
    bool do_restart();
    void set_restart_path( string restartPath );
    std::string get_restart_path();
+
+	 Parallel_IO* get_pio() {return m_parallel_io[0];};
 
 protected:
    void define_pio( );
@@ -71,7 +73,7 @@ protected:
 
 private:
    CheckPoint(); // make it impossible to call default constructor
-   CheckPoint(const CheckPoint &cp ); // hide copy constructor 
+   CheckPoint(const CheckPoint &cp ); // hide copy constructor
    int mPreceedZeros; // number of digits for unique time step in file names
    bool m_double;
    bool m_kji_order;

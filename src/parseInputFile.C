@@ -193,6 +193,7 @@ void EW::deprecatedOption(const string& command,
 bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
 			 vector< vector<TimeSeries*> > & a_GlobalTimeSeries )
 {
+		 std::cout << "HERE1" << std::endl;
   char buffer[256];
   ifstream inputFile;
   int blockCount=0;
@@ -226,6 +227,7 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
 
 // process the testrayleigh command to enable a periodic domain in the (x,y)-directions
 // these commands can enter data directly the object (this->)
+		 std::cout << "HERE2" << std::endl;
   while (!inputFile.eof())
   {
      inputFile.getline(buffer, 256);
@@ -306,6 +308,7 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
      }
   }
 
+		 std::cout << "HERE3" << std::endl;
 // make sure there was a grid command
   if (!foundGrid)
   {
@@ -315,7 +318,7 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
       return false; // unsuccessful
     }
   }
-
+		 std::cout << "HERE3.3" << std::endl;
   if( m_anisotropic && m_use_attenuation )
   {
     if (m_myRank == 0)
@@ -324,7 +327,7 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
       return false; // unsuccessful
     }
   }
-
+		 std::cout << "HERE3.4" << std::endl;
 //  if( m_mesh_refinements && (m_anisotropic || (m_use_attenuation && m_number_mechanisms>0) ) )
   if( m_mesh_refinements && m_anisotropic )
   {
@@ -338,20 +341,24 @@ bool EW::parseInputFile( vector<vector<Source*> > & a_GlobalUniqueSources,
 
 // sort and correct vector 'm_refinementBoundaries'. Initialize if not already available
   cleanUpRefinementLevels();
-
+		 std::cout << "HERE3.5" << std::endl;
   inputFile.clear();
   inputFile.seekg(0, ios::beg); // reset file pointer to the beginning of the input file
 
 // At this point we only allocate solution arrays for the Cartesian grids
 // Need to read the topography information before we can decide on sizes for the
 // curvilinear grid.
+	std::cout << "HERE3.6" << std::endl;
   allocateCartesianSolverArrays(m_global_zmax);
+	std::cout << "HERE3.7" << std::endl;
 
 // setup 2D communicators on the finest grid so that we can smooth the topography
 if(stages_epoch == 0)
 {
   setup2D_MPICommunications();
 }
+
+	std::cout << "HERE4" << std::endl;
 
 // deal with topography
   if (m_topography_exists)
@@ -409,6 +416,7 @@ if(stages_epoch == 0)
 	   "*** No topography command found in input file. Using z=0 as free surface boundary ***" << endl << endl;
   }
 
+		 std::cout << "HERE5" << std::endl;
 // setup communicators for 3D solutions on all grids
 if(stages_epoch == 0)
 {
@@ -4238,7 +4246,11 @@ void EW::allocateCartesianSolverArrays(float_sw4 a_global_zmax)
 //   MPI_Comm_size( MPI_COMM_WORLD, &nprocs  );
    proc_decompose_2d( nx_finest_w_ghost, ny_finest_w_ghost, m_nProcs, proc_max );
 
-   MPI_Cart_create( MPI_COMM_WORLD, 2, proc_max, is_periodic, true, &m_cartesian_communicator );
+	 std::cout << "HERE:A" <<std::endl;
+   if(stages_epoch == 0)
+   {
+		 MPI_Cart_create( MPI_COMM_WORLD, 2, proc_max, is_periodic, true, &m_cartesian_communicator );
+	 }
    int my_proc_coords[2];
    MPI_Cart_get( m_cartesian_communicator, 2, proc_max, is_periodic, my_proc_coords );
    MPI_Cart_shift( m_cartesian_communicator, 0, 1, m_neighbor, m_neighbor+1 );
