@@ -428,14 +428,12 @@ void EW::communicate_array( Sarray& u, int grid )
 {
   // REQUIRE2( 0 <= grid && grid < mU.size() ,
   // 	    " Error in communicate_array, grid = " << grid );
-   std::cout << "CA1" << std::endl;
    REQUIRE2( u.m_nc == 21 || u.m_nc == 4 || u.m_nc == 3 || u.m_nc == 1, "Communicate array, only implemented for one-, three-, four-, and 21-component arrays"
 	     << " nc = " << u.m_nc );
    int ie = u.m_ie, ib=u.m_ib, je=u.m_je, jb=u.m_jb, ke=u.m_ke, kb=u.m_kb;
    MPI_Status status;
    if( u.m_nc == 1 )
    {
-		  std::cout << "CA11" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -444,56 +442,50 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(ie-(2*m_ppadding-1),jb,kb), 1, m_send_type1[2*grid], m_neighbor[1], xtag1,
 		    &u(ib,jb,kb), 1, m_send_type1[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA21" << std::endl;
+
       MPI_Sendrecv( &u(ib+m_ppadding,jb,kb), 1, m_send_type1[2*grid], m_neighbor[0], xtag2,
 		    &u(ie-(m_ppadding-1),jb,kb), 1, m_send_type1[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA31" << std::endl;
+
       // Y-direction communication
       MPI_Sendrecv( &u(ib,je-(2*m_ppadding-1),kb), 1, m_send_type1[2*grid+1], m_neighbor[3], ytag1,
 		    &u(ib,jb,kb), 1, m_send_type1[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA41" << std::endl;
+
       MPI_Sendrecv( &u(ib,jb+m_ppadding,kb), 1, m_send_type1[2*grid+1], m_neighbor[2], ytag2,
 		    &u(ib,je-(m_ppadding-1),kb), 1, m_send_type1[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA51" << std::endl;
+
    }
    else if( u.m_nc == 3 )
    {
-		  std::cout << "CA13" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
       int ytag2 = 348;
       // X-direction communication
-			std::cout << m_neighbor[1] << std::endl;
-			std::cout << grid << std::endl;
-			std::cout << m_send_type3[2*grid] << std::endl;
-			std::cout << m_neighbor[0] << std::endl;
-			std::cout << xtag1 << std::endl;
-			std::cout << m_cartesian_communicator << std::endl;
+
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type3[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type3[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA23" << std::endl;
+
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type3[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type3[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA33" << std::endl;
+
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type3[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type3[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA43" << std::endl;
+
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type3[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type3[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA53" << std::endl;
+
    }
    else if( u.m_nc == 4 )
    {
-		 std::cout << "CA14" << std::endl;
+
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -502,24 +494,23 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type4[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type4[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
-		 std::cout << "CA24" << std::endl;
+
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type4[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type4[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
-						 std::cout << "CA34" << std::endl;
+
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type4[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type4[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
-						 std::cout << "CA44" << std::endl;
+
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type4[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type4[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
-						 std::cout << "CA54" << std::endl;
+
    }
    else if( u.m_nc == 21 )
    {
-		  std::cout << "CA121" << std::endl;
       int xtag1 = 345;
       int xtag2 = 346;
       int ytag1 = 347;
@@ -528,22 +519,21 @@ void EW::communicate_array( Sarray& u, int grid )
       MPI_Sendrecv( &u(1,ie-(2*m_ppadding-1),jb,kb), 1, m_send_type21[2*grid], m_neighbor[1], xtag1,
 		    &u(1,ib,jb,kb), 1, m_send_type21[2*grid], m_neighbor[0], xtag1,
 		    m_cartesian_communicator, &status );
-					  std::cout << "CA221" << std::endl;
+
       MPI_Sendrecv( &u(1,ib+m_ppadding,jb,kb), 1, m_send_type21[2*grid], m_neighbor[0], xtag2,
 		    &u(1,ie-(m_ppadding-1),jb,kb), 1, m_send_type21[2*grid], m_neighbor[1], xtag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA321" << std::endl;
+
       // Y-direction communication
       MPI_Sendrecv( &u(1,ib,je-(2*m_ppadding-1),kb), 1, m_send_type21[2*grid+1], m_neighbor[3], ytag1,
 		    &u(1,ib,jb,kb), 1, m_send_type21[2*grid+1], m_neighbor[2], ytag1,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA421" << std::endl;
+
       MPI_Sendrecv( &u(1,ib,jb+m_ppadding,kb), 1, m_send_type21[2*grid+1], m_neighbor[2], ytag2,
 		    &u(1,ib,je-(m_ppadding-1),kb), 1, m_send_type21[2*grid+1], m_neighbor[3], ytag2,
 		    m_cartesian_communicator, &status );
-						  std::cout << "CA521" << std::endl;
+
    }
-	std::cout << "CAE" << std::endl;
 }
 
 //-----------------------------------------------------------------------

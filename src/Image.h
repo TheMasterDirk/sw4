@@ -156,9 +156,16 @@ void initializeTime(double t=0.0);
 bool needs_mgrad() const;
 double get_write_time() {return m_write_time;};
 
+// Stages Functions:
+void set_mpi_comm(MPI_Comm comm){m_mpiComm_writers = comm;};
 MPI_Comm get_mpi_comm() {return m_mpiComm_writers;};
 // Hardcoded based on the sw4 code
 Parallel_IO * get_pio() {return m_pio[0];};
+void set_wd_comms(MPI_Comm write_comm, MPI_Comm data_comm)
+{
+	mpio_write = write_comm;
+	mpio_data = data_comm;
+}
 
 protected:
 
@@ -221,6 +228,10 @@ std::vector<int*> mWindow; // start + end indices for (i,j,k) for each grid leve
 // pointers to in-plane data (only one will get allocated by Image::allocatePlane()
 std::vector<double*> m_doubleField;
 std::vector<float*> m_floatField;
+
+// Stages variables
+MPI_Comm mpio_write;
+MPI_Comm mpio_data;
 
 };
 

@@ -370,10 +370,8 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
 	      MPI_Group_free( &world_group );
 	      MPI_Group_free( &array_group );
 			}
-			else
-			{
-				std::cout << "RESTORING m_data_comm!" << std::endl;
-			}
+			// else we are restoring the comm from stages!
+			
       delete[] array_holders;
    }
 
@@ -452,10 +450,7 @@ void Parallel_IO::init_pio( int iwrite, int pfs, int ihave_array )
       MPI_Group_free( &world_group );
       MPI_Group_free( &writer_group );
 			}
-			else
-			{
-				std::cout << "RESTORING WRITE COMM!" << std::endl;
-			}
+			// else we are restoring the comm from stages!
    }
    // 3. Save parallel file system info
    m_parallel_file_system = pfs;

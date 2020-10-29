@@ -605,10 +605,8 @@ EW::EW(const string& fileName, vector<vector<Source*> > & a_GlobalSources,
       m_utc0[e].resize(7);
    }
 
-	 std::cout << "HERE" << std::endl;
    if (the_epoch_num == 0 && parseInputFile( ew_a_GlobalUniqueSources, ew_a_GlobalTimeSeries ))
      mParsingSuccessful = true;
-	 std::cout << "HERE" << std::endl;
 // AP: need to figure out a better way of handling these error log files
 //
    // char fname[100];
@@ -650,14 +648,12 @@ void EW::restore_special_comm()
 
 void EW::restore_comms()
 {
-	//for(int i = 0; i < num_comms_saved; i++)
-	//{
-		//if(i < )
-		//else if (i <)
-		//else if (i < )
-		//else
-			// Restore the m_cartesian_communicator;
-	//}
+	for(int v = 0; v < mImageFiles.size(); v++)
+	{
+		mImageFiles[v]->set_mpi_comm(saved_comms[(v*3)]);
+		// The Parallel_IO object with each image has two comms
+		mImageFiles[v]->set_wd_comms(saved_comms[(v*3)+1], saved_comms[(v*3)+2]);
+	}
 
 	m_check_point->set_wd_comms(saved_comms[num_comms_saved-3],saved_comms[num_comms_saved-2]);
 
@@ -741,7 +737,7 @@ void EW::restore_types()
 	}
 
 	delete[] saved_types;
-	debug_datatypes();
+	//debug_datatypes();
 }
 
 void EW::debug_datatypes()
@@ -817,6 +813,8 @@ vector<MPI_Comm> EW::get_all_comms()
 	// Each image has three communicators (2 from it's P_IO, and one from itself)
 	// the "two" per P_IO is a hardcoded value right now. in the future,
 	// probably need to get exact number.
+	// It seems like these Images are made 3 times and that mode_is_grid = false
+	// However, it seems like these objects could also have another image inside them?
 
 	// Save Image objects' communicator
 	for(int i = 0; i < mImageFiles.size(); i++)

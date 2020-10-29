@@ -221,11 +221,10 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 
 // make a new simulation object by reading the input file 'fileName'
   simulation = std::make_unique<EW>(fileName, GlobalSources, GlobalTimeSeries, fault_epoch);
-	std::cout << "HERE " << std::endl;
+
 	if(fault_epoch > 0)
 	{
 		MPIX_Deserialize_handles();
-		std::cout << "Z: " <<   fault_epoch << std::endl;
 		simulation->parseInputStages();
 	}
 
@@ -239,10 +238,8 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
   }
   else
   {
-		std::cout << "Before setup run" << std::endl;
 		// get the simulation object ready for time-stepping
 		simulation->setupRun( GlobalSources );
-		std::cout << "After setup run " << std::endl;
 
 		if (!simulation->isInitialized())
 		{
@@ -254,7 +251,6 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 		}
 		else
 		{
-			std::cout << "Before step idk what to call" << std::endl;
 			if (myRank == 0)
 			{
 				int nth=1;
@@ -290,24 +286,20 @@ int main_loop(int fault_epoch, int *done, int myRank, int nProcs, const string& 
 			}
 // run the simulation
 
-			std::cout << "after idk step" << std::endl;
       int ng=simulation->mNumberOfGrids;
       vector<DataPatches*> upred_saved(ng), ucorr_saved(ng);
       vector<Sarray> U(ng), Um(ng), ph(ng);
-			std::cout << "before solve step" << std::endl;
+
       simulation->solve( GlobalSources[0], GlobalTimeSeries[0], simulation->mMu,
 			simulation->mLambda, simulation->mRho, U, Um, upred_saved,
 			ucorr_saved, false, 0, 0, 0, ph, fail_step );
-			std::cout << "after solve step" << std::endl;
 
 			int bob;
 			MPIX_FT_errno(&bob);
 			if(bob == MPIX_TRY_RELOAD)
 			{
-				std::cout << " hmmm error!" << std::endl;
 				return bob;
 			}
-			std::cout << " Past check!" << std::endl;
 // save all time series
 
       double myWriteTime = 0.0, allWriteTime;

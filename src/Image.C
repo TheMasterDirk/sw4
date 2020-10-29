@@ -361,19 +361,18 @@ void Image::computeGridPtIndex()
 
   //  m_rankWriter = fileWriterIDs[0];
 
-  if (m_mpiComm_writers != MPI_COMM_NULL)
+  if (m_mpiComm_writers != MPI_COMM_NULL && mEW->get_s_epoch() == 0) // && == stages change
       MPI_Comm_free(&m_mpiComm_writers);
 
-  MPI_Group_incl(origGroup,fileWriterIDs.size(),&fileWriterIDs[0],&newGroup);
-  MPI_Comm_create(MPI_COMM_WORLD,newGroup,&m_mpiComm_writers)               ;
+  if(mEW->get_s_epoch() == 0)
+	{
+    MPI_Group_incl(origGroup,fileWriterIDs.size(),&fileWriterIDs[0],&newGroup);
 
-//   int newRank;
-//   MPI_Group_rank(newGroup,&newRank);
-//   MPI_Group_size(newGroup,&size);
+    MPI_Comm_create(MPI_COMM_WORLD,newGroup,&m_mpiComm_writers)               ;
+    MPI_Group_free(&newGroup) ;
 
+  }
   MPI_Group_free(&origGroup);
-  MPI_Group_free(&newGroup) ;
-
 //   getchar();
 
 //  ASSERT(m_mpiComm_writers != MPI_COMM_NULL);
@@ -550,7 +549,7 @@ void Image::define_pio( )
 	    if( q*w+r == myid )
 	       iwrite = 1;
       }
-      m_pio[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start );
+      m_pio[g-glow] = new Parallel_IO( iwrite, mEW->usingParallelFS(), global, local, start, 8000000, 0, mpio_write, mpio_data);
    }
 }
 
